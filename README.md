@@ -1,4 +1,4 @@
-# Placing a hold on a card
+# Identity Verification
 Charging a card consists of three steps:
 
 **🕵️ Authentication -** Card information is sent to the card issuer for verification. Some cards may require the cardholder to strongly authenticate the purchase through protocols like [3D Secure](https://stripe.com/ie/guides/3d-secure-2). 
@@ -21,7 +21,7 @@ Use the `4000000000003220` test card number to trigger a 3D Secure challenge flo
 
 Read more about testing on Stripe at https://stripe.com/docs/testing.
 
-<img src="./placing-hold-preview.png" alt="Checkout page to place a hold" align="center">
+<img src="./identity-verification" alt="Identity verification start page" align="center">
 
 There are two implementations depending on whether you want to use webhooks for any post-payment process: 
 * **[/using-webhooks](/using-webhooks)** Confirms the payment on the client and requires using webhooks or other async event handlers for any post-payment logic (e.g. sending email receipts, fulfilling orders). 
@@ -106,4 +106,4 @@ Q: Can you show me how to build X?
 A: We are always looking for new sample ideas, please email dev-samples@stripe.com with your suggestion!
 
 ## Author(s)
-[@adreyfus-stripe](https://twitter.com/adrind)
+[@bz-stripe](https://twitter.com/atav32)
