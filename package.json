@@ -4,7 +4,7 @@
   "description": "How to verify a person's identity",
   "main": "index.js",
   "scripts": {
-    "start": "node server.js",
+    "start": "node server/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "@bz-stripe",
