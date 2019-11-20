@@ -107,19 +107,21 @@ app.post('/webhook', async (req, res) => {
     eventType = req.body.type;
   }
 
-  if (eventType === "payment_intent.amount_capturable_updated") {
+  //TODO handle verification_intent event
+
+  if (eventType === 'payment_intent.amount_capturable_updated') {
     console.log(`❗ Charging the card for: ${data.object.amount_capturable}`);
     // You can capture an amount less than or equal to the amount_capturable
     // By default capture() will capture the full amount_capturable
     // To cancel a payment before capturing use .cancel() (https://stripe.com/docs/api/payment_intents/cancel)
     const intent = await stripe.paymentIntents.capture(data.object.id);
-  } else if (eventType === "payment_intent.succeeded") {
+  } else if (eventType === 'payment_intent.succeeded') {
     // Funds have been captured
     // Fulfill any orders, e-mail receipts, etc
     // To cancel the payment after capture you will need to issue a Refund (https://stripe.com/docs/api/refunds)
-    console.log("💰 Payment captured!");
-  } else if (eventType === "payment_intent.payment_failed") {
-    console.log("❌ Payment failed.");
+    console.log('💰 Payment captured!');
+  } else if (eventType === 'payment_intent.payment_failed') {
+    console.log('❌ Payment failed.');
   }
   res.sendStatus(200);
 });
