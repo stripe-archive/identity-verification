@@ -46,27 +46,35 @@ app.get('/next-step', (req, res) => {
   res.sendFile(path);
 });
 
-const calculateOrderAmount = items => {
-  // Replace this constant with a calculation of the order's amount
-  // Calculate the order total on the server to prevent
-  // people from directly manipulating the amount on the client
-  return 1400;
-};
 
-app.post("/create-payment-intent", async (req, res) => {
-  const { items, currency } = req.body;
-  // Create a PaymentIntent with the order amount and currency
-  const paymentIntent = await stripe.paymentIntents.create({
-    amount: calculateOrderAmount(items),
-    currency: currency,
-    capture_method: "manual"
+/*
+ * Handler for creating the VerificationIntent
+ */
+app.post('/create-verification-intent', async (req, res) => {
+  // console.log('%c create VI', req, res);
+  // console.log(req.get('host'), req.get('origin'));
+  const verificationIntent = stripeResource.extend({
+    request: stripeResource.method({
+      method: 'POST',
+      path: 'identity/verification_intents',
+    })
   });
 
-  // Send publishable key and PaymentIntent details to client
-  res.send({
-    publicKey: env.parsed.STRIPE_PUBLISHABLE_KEY,
-    clientSecret: paymentIntent.client_secret,
-    id: paymentIntent.id
+  new verificationIntent(stripe).request({
+    'return_url': req.get('origin') + '/return-url',
+    'requested_verifications': [
+      'identity_document',
+    ]
+  }, (err, response) => {
+    // asynchronously called
+    // console.log('%c VI response', err, response);
+    if (err) {
+      console.log('(!) Error:\n', error.raw);
+      res.send(err);
+    } else if (response) {
+      console.log('VI created:\n', response);
+      res.send(response);
+    }
   });
 });
 
