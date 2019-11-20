@@ -19,16 +19,30 @@ app.use(
     // We need the raw body to verify webhook signatures.
     // Let's compute it only when hitting the Stripe webhook endpoint.
     verify: function(req, res, buf) {
-      if (req.originalUrl.startsWith("/webhook")) {
+      if (req.originalUrl.startsWith('/webhook')) {
         req.rawBody = buf.toString();
       }
     }
   })
 );
 
-app.get("/", (req, res) => {
-  // Display checkout page
-  const path = resolve(process.env.STATIC_DIR + "/index.html");
+
+/*
+ * Serve homepage
+ */
+app.get('/', (req, res) => {
+  // Display sign up page
+  const path = resolve(process.env.STATIC_DIR + '/index.html');
+  res.sendFile(path);
+});
+
+
+/*
+ * Serve return_url page
+ */
+app.get('/next-step', (req, res) => {
+  // TODO: handle return-url
+  const path = resolve(process.env.STATIC_DIR + '/next-step.html');
   res.sendFile(path);
 });
 
@@ -56,13 +70,16 @@ app.post("/create-payment-intent", async (req, res) => {
   });
 });
 
-// Webhook handler for asynchronous events.
-app.post("/webhook", async (req, res) => {
+
+/*
+ * Webhook handler for asynchronous events.
+ */
+app.post('/webhook', async (req, res) => {
   // Check if webhook signing is configured.
   if (env.parsed.STRIPE_WEBHOOK_SECRET) {
     // Retrieve the event by verifying the signature using the raw body and secret.
     let event;
-    let signature = req.headers["stripe-signature"];
+    let signature = req.headers['stripe-signature'];
     try {
       event = stripe.webhooks.constructEvent(
         req.rawBody,
