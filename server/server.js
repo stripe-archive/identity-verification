@@ -1,9 +1,17 @@
-const express = require("express");
+const express = require('express');
 const app = express();
-const { resolve } = require("path");
+
 // Copy the .env.example in the root into a .env file in this folder
-const env = require("dotenv").config({ path: "./.env" });
-const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+const env = require('dotenv').config({ path: './.env' });
+const { resolve } = require('path');
+
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const stripeResource = require('stripe').StripeResource;
+
+let verificationIntentId;
+
+// console.log('%c stripe', stripe);
+// console.log('%c stripe resource', stripeResource);
 
 app.use(express.static(process.env.STATIC_DIR));
 app.use(
