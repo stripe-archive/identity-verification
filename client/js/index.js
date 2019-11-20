@@ -1,61 +1,27 @@
-// A reference to Stripe.js
-var stripe;
-
-var orderData = {
-  items: [{ id: "photo-subscription" }],
-  currency: "usd"
-};
-
-fetch("/create-payment-intent", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify(orderData)
-})
-  .then(function(result) {
-    return result.json();
-  })
-  .then(function(data) {
-    return setupElements(data);
-  })
-  .then(function({ stripe, card, clientSecret }) {
-    document.querySelector("#submit").addEventListener("click", function(evt) {
-      evt.preventDefault();
-      // Initiate payment
-      pay(stripe, card, clientSecret);
-    });
-  });
-
-// Set up Stripe.js and Elements to use in checkout form
-var setupElements = function(data) {
-  stripe = Stripe(data.publicKey);
-  var elements = stripe.elements();
-  var style = {
-    base: {
-      color: "#32325d",
-      fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
-      fontSmoothing: "antialiased",
-      fontSize: "16px",
-      "::placeholder": {
-        color: "#aab7c4"
-      }
+/*
+ * Calls the server to retrieve the identity verification start url
+ */
+var startIdentityVerification = () => {
+  fetch("/create-verification-intent", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
     },
-    invalid: {
-      color: "#fa755a",
-      iconColor: "#fa755a"
-    }
-  };
+  }).then(function(result) {
+      return result.json();
+    })
+    .then(function(data) {
+      // console.log('%c data', 'color: #b0b', data);
+      if (data && data.next_action && data.next_action.redirect_to_url) {
+        document.location.href = data.next_action.redirect_to_url;
+      }
+    });
+}
 
-  var card = elements.create("card", { style: style });
-  card.mount("#card-element");
+const startButton = document.querySelector('#create-verification-intent');
+startButton.addEventListener('click', startIdentityVerification);
 
-  return {
-    stripe,
-    card,
-    clientSecret: data.clientSecret
-  };
-};
+
 
 /*
  * Calls stripe.confirmCardPayment which creates a pop-up modal to
