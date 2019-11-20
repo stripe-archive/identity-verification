@@ -126,4 +126,15 @@ app.post('/webhook', async (req, res) => {
   res.sendStatus(200);
 });
 
+
+/*
+ * Handle 404 responses
+ */
+app.use(function (req, res, next) {
+  const path = resolve(process.env.STATIC_DIR + '/404.html');
+  res.status(404).sendFile(path);
+})
+
+
+// Start server
 app.listen(4242, () => console.log(`Node server listening on port ${4242}!`));
