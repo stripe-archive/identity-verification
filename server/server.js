@@ -1,19 +1,27 @@
-const express = require('express');
-const app = express();
-
 // Copy the .env.example in the root into a .env file in this folder
 const env = require('dotenv').config({ path: './.env' });
 const { resolve } = require('path');
 
+// Express
+const express = require('express');
+const app = express();
+
+// Websocket
+const server = require('http').createServer(app);
+const io = require('socket.io').listen(server);
+
+// Stripe
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const stripeResource = require('stripe').StripeResource;
 
-let verificationIntentId;
+// TODO replace this with a database for persistent state
+const verificationStore = {vi_1Fh2ZyL08vT7v6D6uIj9kpHW: ''};
+const isValidVerificationIntentId = (id) => (id in verificationStore);
 
-// console.log('%c stripe', stripe);
-// console.log('%c stripe resource', stripeResource);
 
 app.use(express.static(process.env.STATIC_DIR));
+
+
 app.use(
   express.json({
     // We need the raw body to verify webhook signatures.
@@ -41,7 +49,7 @@ app.get('/', (req, res) => {
  * Serve return_url page
  */
 app.get('/next-step', (req, res) => {
-  // TODO: handle return-url
+  // TODO handle return_url states
   const path = resolve(process.env.STATIC_DIR + '/next-step.html');
   res.sendFile(path);
 });
@@ -51,8 +59,6 @@ app.get('/next-step', (req, res) => {
  * Handler for creating the VerificationIntent
  */
 app.post('/create-verification-intent', async (req, res) => {
-  // console.log('%c create VI', req, res);
-  // console.log(req.get('host'), req.get('origin'));
   const verificationIntent = stripeResource.extend({
     request: stripeResource.method({
       method: 'POST',
@@ -61,19 +67,25 @@ app.post('/create-verification-intent', async (req, res) => {
   });
 
   new verificationIntent(stripe).request({
-    'return_url': req.get('origin') + '/return-url',
+    'return_url': req.get('origin') + '/next-step',
     'requested_verifications': [
       'identity_document',
     ]
   }, (err, response) => {
     // asynchronously called
-    // console.log('%c VI response', err, response);
     if (err) {
       console.log('(!) Error:\n', error.raw);
       res.send(err);
     } else if (response) {
-      console.log('VI created:\n', response);
-      res.send(response);
+      console.log('VerificationIntent created:\n', response);
+      if (response.id) {
+        verificationStore[response.id] = '';
+        res.send(response);
+      } else {
+        res.status(500).send({
+          errorMessage: 'Verification intent contained no ID'
+        });
+      }
     }
   });
 });
@@ -136,5 +148,30 @@ app.use(function (req, res, next) {
 })
 
 
+/*
+ * Handle websocket connection
+ */
+io.on('connect', (socket) => {
+  console.log('socket: connect:\t', socket.id);
+
+  socket.on('init', (data) => {
+    const { verificationIntentId } = data;
+    if (isValidVerificationIntentId(verificationIntentId)) {
+      verificationStore[verificationIntentId] = socket.id;
+      socket.emit('acknowledge');
+    } else {
+      socket.emit('exception', {
+        errorCode: 'VERIFICATION_INTENT_INTENT_NOT_FOUND',
+        errorMessage: 'Server could not find a recent verification record'
+      });
+    }
+  });
+
+  socket.on('disconnect', (reason) => {
+    console.log('socket: disconnect:\t', socket.id, reason);
+  });
+});
+
+
 // Start server
-app.listen(4242, () => console.log(`Node server listening on port ${4242}!`));
+server.listen(4242, () => console.log(`Node server listening on port ${4242}!`));
