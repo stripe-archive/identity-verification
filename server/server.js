@@ -12,7 +12,7 @@ const io = require('socket.io').listen(server);
 
 // Stripe
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-const stripeResource = require('stripe').StripeResource;
+const StripeResource = require('stripe').StripeResource;
 
 // TODO replace this with a database for persistent state
 const verificationStore = {vi_1Fh2ZyL08vT7v6D6uIj9kpHW: ''};
@@ -59,14 +59,14 @@ app.get('/next-step', (req, res) => {
  * Handler for creating the VerificationIntent
  */
 app.post('/create-verification-intent', async (req, res) => {
-  const verificationIntent = stripeResource.extend({
-    request: stripeResource.method({
+  const VerificationIntent = StripeResource.extend({
+    request: StripeResource.method({
       method: 'POST',
       path: 'identity/verification_intents',
     })
   });
 
-  new verificationIntent(stripe).request({
+  new VerificationIntent(stripe).request({
     'return_url': req.get('origin') + '/next-step',
     'requested_verifications': [
       'identity_document',
@@ -74,10 +74,10 @@ app.post('/create-verification-intent', async (req, res) => {
   }, (err, response) => {
     // asynchronously called
     if (err) {
-      console.log('(!) Error:\n', error.raw);
+      console.log('\nError:\n', error.raw);
       res.send(err);
     } else if (response) {
-      console.log('VerificationIntent created:\n', response);
+      // console.log('\nVerificationIntent created:\n', response);
       if (response.id) {
         verificationStore[response.id] = '';
         res.send(response);
@@ -107,7 +107,8 @@ app.post('/webhook', async (req, res) => {
         env.parsed.STRIPE_WEBHOOK_SECRET
       );
     } catch (err) {
-      console.log(`⚠️  Webhook signature verification failed.`);
+      console.log('\nWebhook signature verification failed.');
+      console.log(err);
       return res.sendStatus(400);
     }
     data = event.data;
@@ -119,22 +120,14 @@ app.post('/webhook', async (req, res) => {
     eventType = req.body.type;
   }
 
-  //TODO handle verification_intent event
-
-  if (eventType === 'payment_intent.amount_capturable_updated') {
-    console.log(`❗ Charging the card for: ${data.object.amount_capturable}`);
-    // You can capture an amount less than or equal to the amount_capturable
-    // By default capture() will capture the full amount_capturable
-    // To cancel a payment before capturing use .cancel() (https://stripe.com/docs/api/payment_intents/cancel)
-    const intent = await stripe.paymentIntents.capture(data.object.id);
-  } else if (eventType === 'payment_intent.succeeded') {
-    // Funds have been captured
-    // Fulfill any orders, e-mail receipts, etc
-    // To cancel the payment after capture you will need to issue a Refund (https://stripe.com/docs/api/refunds)
-    console.log('💰 Payment captured!');
-  } else if (eventType === 'payment_intent.payment_failed') {
-    console.log('❌ Payment failed.');
+  if (eventType.includes('verification_intent')) {
+    console.log('\nVerificationIntent updated');
+    const socketId = verificationStore[data.id];
+    if (socketId) {
+      io.to(socketId).emit(data);
+    }
   }
+
   res.sendStatus(200);
 });
 
