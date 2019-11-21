@@ -4,6 +4,7 @@
   "description": "How to verify a person's identity",
   "main": "index.js",
   "scripts": {
+    "debug": "node --inspect server/server.js",
     "start": "node server/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
