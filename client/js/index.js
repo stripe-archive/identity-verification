@@ -1,21 +1,31 @@
 /*
  * Calls the server to retrieve the identity verification start url
  */
-var startIdentityVerification = () => {
-  fetch("/create-verification-intent", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-  }).then(function(result) {
+const startIdentityVerification = () => {
+  const verificationIntentId = sessionStorage.getItem(window.stripeSample.VI_STORAGE_KEY);
+
+  if (verificationIntentId) {
+    // if a verification is already in progress, go see the results
+    document.location.href = '/next-step?existing-verification';
+  } else {
+    fetch("/create-verification-intent", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+    }).then(function(result) {
       return result.json();
-    })
-    .then(function(data) {
-      // console.log('%c data', 'color: #b0b', data);
-      if (data && data.next_action && data.next_action.redirect_to_url) {
-        document.location.href = data.next_action.redirect_to_url;
+    }).then(function(data) {
+      console.log('%c data', 'color: #b0b', data);
+      if (data.id) {
+        sessionStorage.setItem(window.stripeSample.VI_STORAGE_KEY, data.id);
+        if (data && data.next_action && data.next_action.redirect_to_url) {
+          // redirect the user to the verification flow
+          document.location.href = data.next_action.redirect_to_url;
+        }
       }
     });
+  }
 }
 
 const startButton = document.querySelector('#create-verification-intent');
