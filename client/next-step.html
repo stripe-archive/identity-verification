@@ -9,7 +9,8 @@
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="css/normalize.css" />
     <link rel="stylesheet" href="css/global.css" />
-    <!-- <script src="https://js.stripe.com/v3/"></script> -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="js/globals.js" defer></script>
     <script src="js/next-step.js" defer></script>
   </head>
 
@@ -19,12 +20,11 @@
         <header class="sr-header">
           <div class="sr-header__logo"></div>
         </header>
-        <div class="sr-payment-summary">
+        <div class="sr-verification-summary">
           <h1 class="order-amount">Identity Verification</h1>
         </div>
-        <a href="/">
-          <button id="start-over">Start Over</button>
-        </a>
+        <pre id="response" class="sr-callout">Waiting for response...</pre>
+        <button id="start-over">Start Over</button>
       </div>
     </div>
   </body>
