@@ -33,6 +33,8 @@ startButton.addEventListener('click', startIdentityVerification);
 
 
 
+
+
 /*
  * Calls stripe.confirmCardPayment which creates a pop-up modal to
  * prompt the user to enter  extra authentication details without leaving your page
@@ -84,8 +86,8 @@ var orderComplete = function(clientSecret) {
     });
     document.querySelector(".hold-status").textContent =
       paymentIntent.status === "requires_capture"
-        ? "successfully placed"
-        : "did not place";
+      ? "successfully placed"
+      : "did not place";
     document.querySelector("pre").textContent = paymentIntentJson;
   });
 };
