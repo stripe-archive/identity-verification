@@ -14,6 +14,18 @@ const io = require('socket.io').listen(server);
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const StripeResource = require('stripe').StripeResource;
 
+const VerificationIntent = StripeResource.extend({
+  create: StripeResource.method({
+    method: 'POST',
+    path: 'identity/verification_intents',
+  }),
+  get: StripeResource.method({
+    method: 'GET',
+    path: 'identity/verification_intents/{verificationIntentId}',
+  })
+});
+const verificationIntent = new VerificationIntent(stripe);
+
 // TODO replace this with a database for persistent state
 const verificationStore = {};
 const isValidVerificationIntentId = (id) => (id in verificationStore);
@@ -59,14 +71,7 @@ app.get('/next-step', (req, res) => {
  * Handler for creating the VerificationIntent
  */
 app.post('/create-verification-intent', async (req, res) => {
-  const VerificationIntent = StripeResource.extend({
-    request: StripeResource.method({
-      method: 'POST',
-      path: 'identity/verification_intents',
-    })
-  });
-
-  new VerificationIntent(stripe).request({
+  verificationIntent.create({
     'return_url': req.get('origin') + '/next-step',
     'requested_verifications': [
       'identity_document',
@@ -167,16 +172,20 @@ io.on('connect', (socket) => {
 
   socket.on('init', (data) => {
     const { verificationIntentId } = data;
-    if (isValidVerificationIntentId(verificationIntentId)) {
-      verificationStore[verificationIntentId] = socket.id;
-      console.log('socket:acknowledge', verificationStore);
-      socket.emit('acknowledge');
-    } else {
-      socket.emit('exception', {
-        errorCode: 'VERIFICATION_INTENT_INTENT_NOT_FOUND',
-        errorMessage: 'Server could not find a recent verification record'
-      });
-    }
+    verificationStore[verificationIntentId] = socket.id;
+    console.log('socket:acknowledge', verificationStore);
+
+    verificationIntent.get(verificationIntentId, (err, response) => {
+      console.log('GET', err, response);
+      if (response) {
+        socket.emit('acknowledge', response);
+      } else if (err) {
+        socket.emit('exception', {
+          errorCode: 'VERIFICATION_INTENT_INTENT_NOT_FOUND',
+          errorMessage: 'Server could not find a recent verification record'
+        });
+      }
+    });
   });
 
   socket.on('disconnect', (reason) => {

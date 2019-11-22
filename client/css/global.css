@@ -310,7 +310,7 @@ a:active {
   background: var(--gray-offset);
   padding: 12px;
   border-radius: var(--radius);
-  max-height: 40vh;
+  max-height: 50vh;
   overflow: auto;
 }
 code,

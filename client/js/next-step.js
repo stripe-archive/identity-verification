@@ -1,5 +1,9 @@
 const verificationIntentId = sessionStorage.getItem(window.stripeSample.VI_STORAGE_KEY);
-const responseContainer = document.querySelector('#response');
+
+const updateResponseContainer = (response) => {
+  const responseContainer = document.querySelector('#response');
+  responseContainer.textContent = JSON.stringify(response, null, 2);
+}
 
 if (verificationIntentId) {
   const socket = io();
@@ -11,25 +15,28 @@ if (verificationIntentId) {
     });
   });
 
-  socket.on('acknowledge', () => {
+  socket.on('acknowledge', (data) => {
     console.log('%c socket:acknowledge', 'color: #b0b');
+    if (data.status === 'succeeded') {
+      updateResponseContainer(data);
+    }
   });
 
   socket.on('exception', (error) => {
     console.log('%c socket:error', 'color: #b0b', error);
     if (error.errorCode === 'VERIFICATION_INTENT_INTENT_NOT_FOUND') {
-      responseContainer.textContent = 'Oops, the server could not find a recent verification. Please start over.'
+      updateResponseContainer('Oops, the server could not find a recent verification. Please start over.');
     }
   });
 
   socket.on('verification_result', (data) => {
     console.log('%c socket:result', 'color: #b0b', data);
     if (data.status === 'succeeded') {
-      responseContainer.textContent = JSON.stringify(data, null, 2);
+      updateResponseContainer(data);
     }
   });
 } else {
-  responseContainer.textContent = 'Oops, could not find a recent verification. Please start over.'
+  updateResponseContainer('Oops, could not find a recent verification. Please start over.');
   console.log('Could not find an existing verification.');
 }
 
