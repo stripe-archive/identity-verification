@@ -15,7 +15,7 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const StripeResource = require('stripe').StripeResource;
 
 // TODO replace this with a database for persistent state
-const verificationStore = {vi_1Fh2ZyL08vT7v6D6uIj9kpHW: ''};
+const verificationStore = {};
 const isValidVerificationIntentId = (id) => (id in verificationStore);
 
 
@@ -92,6 +92,20 @@ app.post('/create-verification-intent', async (req, res) => {
 
 
 /*
+ * Simulate slow webhook events
+ */
+const simulateSlowEvent = (data, delay) => {
+  setTimeout(() => {
+    // console.log('\nVerificationIntent updated', data, verificationStore);
+    const socketId = verificationStore[data.id];
+    if (socketId) {
+      io.to(socketId).emit('verification_result', data);
+    }
+  }, delay);
+}
+
+
+/*
  * Webhook handler for asynchronous events.
  */
 app.post('/webhook', async (req, res) => {
@@ -111,21 +125,25 @@ app.post('/webhook', async (req, res) => {
       console.log(err);
       return res.sendStatus(400);
     }
-    data = event.data;
+    data = event.data.object;
     eventType = event.type;
   } else {
     // Webhook signing is recommended, but if the secret is not configured in `config.js`,
     // we can retrieve the event data directly from the request body.
-    data = req.body.data;
+    data = req.body.data.object;
     eventType = req.body.type;
   }
 
-  if (eventType.includes('verification_intent')) {
-    console.log('\nVerificationIntent updated');
-    const socketId = verificationStore[data.id];
-    if (socketId) {
-      io.to(socketId).emit(data);
-    }
+  // console.log('\nwebhook:eventType', eventType);
+  switch (eventType) {
+    case 'identity.verification_intent.created':
+      console.log('\nVerificationIntent created');
+      break;
+    case 'identity.verification_intent.updated':
+    case 'identity.verification_intent.succeeded':
+      // TODO don't simulate slow event
+      simulateSlowEvent(data, 10000);
+      break;
   }
 
   res.sendStatus(200);
@@ -145,12 +163,13 @@ app.use(function (req, res, next) {
  * Handle websocket connection
  */
 io.on('connect', (socket) => {
-  console.log('socket: connect:\t', socket.id);
+  // console.log('socket: connect:\t', socket.id);
 
   socket.on('init', (data) => {
     const { verificationIntentId } = data;
     if (isValidVerificationIntentId(verificationIntentId)) {
       verificationStore[verificationIntentId] = socket.id;
+      console.log('socket:acknowledge', verificationStore);
       socket.emit('acknowledge');
     } else {
       socket.emit('exception', {
