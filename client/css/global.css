@@ -286,9 +286,23 @@ button:disabled {
   cursor: none;
 }
 
+button.clear-button {
+  border: 1px solid var(--accent-color);
+  background: transparent;
+  color: var(--accent-color);
+}
+
 .sr-verification-form button,
 .fullwidth {
   width: 100%;
+}
+
+.button-container {
+  display: flex;
+  padding: 5px;
+}
+.button-container button {
+  margin: 5px;
 }
 
 a {
