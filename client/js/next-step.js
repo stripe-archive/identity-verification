@@ -2,7 +2,25 @@ const verificationIntentId = sessionStorage.getItem(window.stripeSample.VI_STORA
 
 const updateResponseContainer = (response) => {
   const responseContainer = document.querySelector('#response');
-  responseContainer.textContent = JSON.stringify(response, null, 2);
+  let responseText = response;
+  if (typeof response !== 'string') {
+    responseText = JSON.stringify(response, null, 2);
+  }
+  responseContainer.textContent = responseText;
+}
+
+const updateHeader = (status) => {
+  const header = document.querySelector('h4.header');
+  header.textContent = status.replace(/_/g, ' ');
+}
+
+const handleDataResponse = (data) => {
+  updateResponseContainer(data);
+  updateHeader(data.status);
+  if (data.status === 'requires_action') {
+    const tryAgainButton = document.querySelector('#try-again');
+    tryAgainButton.classList.remove('hidden');
+  }
 }
 
 if (verificationIntentId) {
@@ -17,31 +35,27 @@ if (verificationIntentId) {
 
   socket.on('acknowledge', (data) => {
     console.log('%c socket:acknowledge', 'color: #b0b');
-    if (data.status === 'succeeded') {
-      updateResponseContainer(data);
-    }
+    handleDataResponse(data);
   });
 
   socket.on('exception', (error) => {
     console.log('%c socket:error', 'color: #b0b', error);
     if (error.errorCode === 'VERIFICATION_INTENT_INTENT_NOT_FOUND') {
       updateResponseContainer('Oops, the server could not find a recent verification. Please start over.');
+      updateHeader('Error');
     }
   });
 
   socket.on('verification_result', (data) => {
     console.log('%c socket:result', 'color: #b0b', data);
-    if (data.status === 'requires_action') {
-      updateResponseContainer('It looks like we need a bit more information to verify your identity');
-    }
-    if (data.status === 'succeeded') {
-      updateResponseContainer(data);
-    }
+    handleDataResponse(data);
   });
 } else {
   updateResponseContainer('Oops, could not find a recent verification. Please start over.');
+  updateHeader('Error');
   console.log('Could not find an existing verification.');
 }
+
 
 const startOverButton = document.querySelector('#start-over');
 startOverButton.addEventListener('click', () => {
