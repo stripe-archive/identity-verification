@@ -1,61 +1,39 @@
-// A reference to Stripe.js
-var stripe;
+/*
+ * Calls the server to retrieve the identity verification start url
+ */
+const startIdentityVerification = () => {
+  const verificationIntentId = sessionStorage.getItem(window.stripeSample.VI_STORAGE_KEY);
 
-var orderData = {
-  items: [{ id: "photo-subscription" }],
-  currency: "usd"
-};
-
-fetch("/create-payment-intent", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify(orderData)
-})
-  .then(function(result) {
-    return result.json();
-  })
-  .then(function(data) {
-    return setupElements(data);
-  })
-  .then(function({ stripe, card, clientSecret }) {
-    document.querySelector("#submit").addEventListener("click", function(evt) {
-      evt.preventDefault();
-      // Initiate payment
-      pay(stripe, card, clientSecret);
-    });
-  });
-
-// Set up Stripe.js and Elements to use in checkout form
-var setupElements = function(data) {
-  stripe = Stripe(data.publicKey);
-  var elements = stripe.elements();
-  var style = {
-    base: {
-      color: "#32325d",
-      fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
-      fontSmoothing: "antialiased",
-      fontSize: "16px",
-      "::placeholder": {
-        color: "#aab7c4"
+  if (verificationIntentId) {
+    // if a verification is already in progress, go see the results
+    document.location.href = '/next-step?existing-verification';
+  } else {
+    fetch("/create-verification-intent", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+    }).then(function(result) {
+      return result.json();
+    }).then(function(data) {
+      console.log('%c data', 'color: #b0b', data);
+      if (data.id) {
+        sessionStorage.setItem(window.stripeSample.VI_STORAGE_KEY, data.id);
+        if (data && data.next_action && data.next_action.redirect_to_url) {
+          // redirect the user to the verification flow
+          document.location.href = data.next_action.redirect_to_url;
+        }
       }
-    },
-    invalid: {
-      color: "#fa755a",
-      iconColor: "#fa755a"
-    }
-  };
+    });
+  }
+}
 
-  var card = elements.create("card", { style: style });
-  card.mount("#card-element");
+const startButton = document.querySelector('#create-verification-intent');
+startButton.addEventListener('click', startIdentityVerification);
 
-  return {
-    stripe,
-    card,
-    clientSecret: data.clientSecret
-  };
-};
+
+
+
 
 /*
  * Calls stripe.confirmCardPayment which creates a pop-up modal to
@@ -108,8 +86,8 @@ var orderComplete = function(clientSecret) {
     });
     document.querySelector(".hold-status").textContent =
       paymentIntent.status === "requires_capture"
-        ? "successfully placed"
-        : "did not place";
+      ? "successfully placed"
+      : "did not place";
     document.querySelector("pre").textContent = paymentIntentJson;
   });
 };

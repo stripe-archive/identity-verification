@@ -11,7 +11,7 @@
   --body-font-family: -apple-system, BlinkMacSystemFont, sans-serif;
   --radius: 6px;
   --logo-image: url("https://storage.googleapis.com/stripe-sample-images/KAVHOLM.svg");
-  --form-width: 343px;
+  --form-width: 620px;
 }
 
 /* Base */
@@ -44,6 +44,10 @@ h4 {
   color: var(--gray-light);
 }
 
+.header {
+  text-transform: capitalize;
+}
+
 /* Layout */
 .sr-root {
   display: flex;
@@ -60,7 +64,7 @@ h4 {
 .sr-header {
   margin-bottom: 32px;
 }
-.sr-payment-summary {
+.sr-verification-summary {
   margin-bottom: 20px;
 }
 .sr-main,
@@ -262,16 +266,17 @@ input[type="text"]::placeholder {
 
 /* Buttons and links */
 button {
-  background: var(--accent-color);
-  border-radius: var(--radius);
-  color: white;
-  border: 0;
-  padding: 12px 16px;
+  display: block;
   margin-top: 16px;
+  border: 0;
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  width: 62%;
+  background: var(--accent-color);
+  color: white;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
-  display: block;
 }
 button:hover {
   filter: contrast(115%);
@@ -285,9 +290,23 @@ button:disabled {
   cursor: none;
 }
 
-.sr-payment-form button,
+button.clear-button {
+  border: 1px solid var(--accent-color);
+  background: transparent;
+  color: var(--accent-color);
+}
+
+.sr-verification-form button,
 .fullwidth {
   width: 100%;
+}
+
+.button-container {
+  display: flex;
+  padding: 5px;
+}
+.button-container button {
+  margin: 5px;
 }
 
 a {
@@ -309,7 +328,7 @@ a:active {
   background: var(--gray-offset);
   padding: 12px;
   border-radius: var(--radius);
-  max-height: 200px;
+  max-height: 50vh;
   overflow: auto;
 }
 code,
@@ -336,7 +355,7 @@ pre {
     background-position: center;
   }
 
-  .sr-payment-summary {
+  .sr-verification-summary {
     text-align: center;
   }
 
@@ -347,13 +366,17 @@ pre {
   .sr-main {
     width: 100%;
   }
+
+  button {
+    width: 100%;
+  }
 }
 
 /* Pasha styles – Brand-overrides, can split these out */
 :root {
-  --accent-color: #ed5f74;
+  --accent-color: #15B67C;
   --headline-color: var(--accent-color);
-  --logo-image: url("https://storage.googleapis.com/stripe-sample-images/logo-pasha.svg");
+  --logo-image: url("../media/rocketrides.svg");
 }
 
 .pasha-image-stack {
@@ -462,7 +485,7 @@ pre {
   animation-timing-function: ease;
 }
 
-.sr-payment-form .sr-form-row {
+.sr-verification-form .sr-form-row {
   animation: 0.4s field-in;
   animation-fill-mode: both;
   animation-timing-function: ease;
@@ -470,22 +493,22 @@ pre {
 }
 
 /* need saas for loop :D  */
-.sr-payment-form .sr-form-row:nth-child(1) {
+.sr-verification-form .sr-form-row:nth-child(1) {
   animation-delay: 0;
 }
-.sr-payment-form .sr-form-row:nth-child(2) {
+.sr-verification-form .sr-form-row:nth-child(2) {
   animation-delay: 60ms;
 }
-.sr-payment-form .sr-form-row:nth-child(3) {
+.sr-verification-form .sr-form-row:nth-child(3) {
   animation-delay: 120ms;
 }
-.sr-payment-form .sr-form-row:nth-child(4) {
+.sr-verification-form .sr-form-row:nth-child(4) {
   animation-delay: 180ms;
 }
-.sr-payment-form .sr-form-row:nth-child(5) {
+.sr-verification-form .sr-form-row:nth-child(5) {
   animation-delay: 240ms;
 }
-.sr-payment-form .sr-form-row:nth-child(6) {
+.sr-verification-form .sr-form-row:nth-child(6) {
   animation-delay: 300ms;
 }
 .hidden {

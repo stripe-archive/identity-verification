@@ -9,8 +9,9 @@
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="css/normalize.css" />
     <link rel="stylesheet" href="css/global.css" />
+    <script src="/socket.io/socket.io.js"></script>
     <script src="js/constants.js" defer></script>
-    <script src="js/index.js" defer></script>
+    <script src="js/next-step.js" defer></script>
   </head>
 
   <body>
@@ -20,10 +21,14 @@
           <div class="sr-header__logo"></div>
         </header>
         <div class="sr-verification-summary">
-          <h1 class="title">Sign Up</h1>
-          <h4 class="header">Verify your identity</h4>
+          <h1 class="title">Identity Verification</h1>
+          <h4 class="header"></h4>
         </div>
-        <button id="create-verification-intent">Get Started</button>
+        <pre id="response" class="sr-callout">Waiting for response...</pre>
+        <div class="button-container">
+          <button id="try-again" class="clear-button hidden">Try Again</button>
+          <button id="start-over">Start Over</button>
+        </div>
       </div>
     </div>
   </body>

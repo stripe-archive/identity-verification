@@ -1,60 +1,124 @@
-const express = require("express");
-const app = express();
-const { resolve } = require("path");
 // Copy the .env.example in the root into a .env file in this folder
-const env = require("dotenv").config({ path: "./.env" });
-const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+const env = require('dotenv').config({ path: './.env' });
+const { resolve } = require('path');
+
+// Express
+const express = require('express');
+const app = express();
+
+// Websocket
+const server = require('http').createServer(app);
+const io = require('socket.io').listen(server);
+
+// Stripe
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const StripeResource = require('stripe').StripeResource;
+
+const VerificationIntent = StripeResource.extend({
+  create: StripeResource.method({
+    method: 'POST',
+    path: 'identity/verification_intents',
+  }),
+  get: StripeResource.method({
+    method: 'GET',
+    path: 'identity/verification_intents/{verificationIntentId}',
+  })
+});
+const verificationIntent = new VerificationIntent(stripe);
+
+// TODO replace this with a database for persistent state
+const verificationStore = {};
+const isValidVerificationIntentId = (id) => (id in verificationStore);
+
 
 app.use(express.static(process.env.STATIC_DIR));
+
+
 app.use(
   express.json({
     // We need the raw body to verify webhook signatures.
     // Let's compute it only when hitting the Stripe webhook endpoint.
     verify: function(req, res, buf) {
-      if (req.originalUrl.startsWith("/webhook")) {
+      if (req.originalUrl.startsWith('/webhook')) {
         req.rawBody = buf.toString();
       }
     }
   })
 );
 
-app.get("/", (req, res) => {
-  // Display checkout page
-  const path = resolve(process.env.STATIC_DIR + "/index.html");
+
+/*
+ * Serve homepage
+ */
+app.get('/', (req, res) => {
+  // Display sign up page
+  const path = resolve(process.env.STATIC_DIR + '/index.html');
   res.sendFile(path);
 });
 
-const calculateOrderAmount = items => {
-  // Replace this constant with a calculation of the order's amount
-  // Calculate the order total on the server to prevent
-  // people from directly manipulating the amount on the client
-  return 1400;
-};
 
-app.post("/create-payment-intent", async (req, res) => {
-  const { items, currency } = req.body;
-  // Create a PaymentIntent with the order amount and currency
-  const paymentIntent = await stripe.paymentIntents.create({
-    amount: calculateOrderAmount(items),
-    currency: currency,
-    capture_method: "manual"
-  });
+/*
+ * Serve return_url page
+ */
+app.get('/next-step', (req, res) => {
+  // TODO handle return_url states
+  const path = resolve(process.env.STATIC_DIR + '/next-step.html');
+  res.sendFile(path);
+});
 
-  // Send publishable key and PaymentIntent details to client
-  res.send({
-    publicKey: env.parsed.STRIPE_PUBLISHABLE_KEY,
-    clientSecret: paymentIntent.client_secret,
-    id: paymentIntent.id
+
+/*
+ * Handler for creating the VerificationIntent
+ */
+app.post('/create-verification-intent', async (req, res) => {
+  verificationIntent.create({
+    'return_url': req.get('origin') + '/next-step',
+    'requested_verifications': [
+      'identity_document',
+    ]
+  }, (err, response) => {
+    // asynchronously called
+    if (err) {
+      console.log('\nError:\n', error.raw);
+      res.send(err);
+    } else if (response) {
+      // console.log('\nVerificationIntent created:\n', response);
+      if (response.id) {
+        verificationStore[response.id] = '';
+        res.send(response);
+      } else {
+        res.status(500).send({
+          errorMessage: 'Verification intent contained no ID'
+        });
+      }
+    }
   });
 });
 
-// Webhook handler for asynchronous events.
-app.post("/webhook", async (req, res) => {
+
+/*
+ * Simulate slow webhook events
+ */
+const simulateSlowEvent = (data, delay) => {
+  setTimeout(() => {
+    // console.log('\nVerificationIntent updated', data, verificationStore);
+    const socketId = verificationStore[data.id];
+    if (socketId) {
+      io.to(socketId).emit('verification_result', data);
+    }
+  }, delay);
+}
+
+
+/*
+ * Webhook handler for asynchronous events.
+ */
+app.post('/webhook', async (req, res) => {
   // Check if webhook signing is configured.
   if (env.parsed.STRIPE_WEBHOOK_SECRET) {
     // Retrieve the event by verifying the signature using the raw body and secret.
     let event;
-    let signature = req.headers["stripe-signature"];
+    let signature = req.headers['stripe-signature'];
     try {
       event = stripe.webhooks.constructEvent(
         req.rawBody,
@@ -62,33 +126,73 @@ app.post("/webhook", async (req, res) => {
         env.parsed.STRIPE_WEBHOOK_SECRET
       );
     } catch (err) {
-      console.log(`⚠️  Webhook signature verification failed.`);
+      console.log('\nWebhook signature verification failed.');
+      console.log(err);
       return res.sendStatus(400);
     }
-    data = event.data;
+    data = event.data.object;
     eventType = event.type;
   } else {
     // Webhook signing is recommended, but if the secret is not configured in `config.js`,
     // we can retrieve the event data directly from the request body.
-    data = req.body.data;
+    data = req.body.data.object;
     eventType = req.body.type;
   }
 
-  if (eventType === "payment_intent.amount_capturable_updated") {
-    console.log(`❗ Charging the card for: ${data.object.amount_capturable}`);
-    // You can capture an amount less than or equal to the amount_capturable
-    // By default capture() will capture the full amount_capturable
-    // To cancel a payment before capturing use .cancel() (https://stripe.com/docs/api/payment_intents/cancel)
-    const intent = await stripe.paymentIntents.capture(data.object.id);
-  } else if (eventType === "payment_intent.succeeded") {
-    // Funds have been captured
-    // Fulfill any orders, e-mail receipts, etc
-    // To cancel the payment after capture you will need to issue a Refund (https://stripe.com/docs/api/refunds)
-    console.log("💰 Payment captured!");
-  } else if (eventType === "payment_intent.payment_failed") {
-    console.log("❌ Payment failed.");
+  // console.log('\nwebhook:eventType', eventType);
+  switch (eventType) {
+    case 'identity.verification_intent.created':
+      console.log('\nVerificationIntent created');
+      break;
+    case 'identity.verification_intent.updated':
+    case 'identity.verification_intent.succeeded':
+      // TODO don't simulate slow event
+      simulateSlowEvent(data, 10000);
+      break;
   }
+
   res.sendStatus(200);
 });
 
-app.listen(4242, () => console.log(`Node server listening on port ${4242}!`));
+
+/*
+ * Handle 404 responses
+ */
+app.use(function (req, res, next) {
+  const path = resolve(process.env.STATIC_DIR + '/404.html');
+  res.status(404).sendFile(path);
+})
+
+
+/*
+ * Handle websocket connection
+ */
+io.on('connect', (socket) => {
+  // console.log('socket: connect:\t', socket.id);
+
+  socket.on('init', (data) => {
+    const { verificationIntentId } = data;
+    verificationStore[verificationIntentId] = socket.id;
+    console.log('socket:acknowledge', verificationStore);
+
+    verificationIntent.get(verificationIntentId, (err, response) => {
+      console.log('GET', err, response);
+      if (response) {
+        socket.emit('acknowledge', response);
+      } else if (err) {
+        socket.emit('exception', {
+          errorCode: 'VERIFICATION_INTENT_INTENT_NOT_FOUND',
+          errorMessage: 'Server could not find a recent verification record'
+        });
+      }
+    });
+  });
+
+  socket.on('disconnect', (reason) => {
+    console.log('socket: disconnect:\t', socket.id, reason);
+  });
+});
+
+
+// Start server
+server.listen(4242, () => console.log(`Node server listening on port ${4242}!`));
