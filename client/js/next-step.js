@@ -31,6 +31,9 @@ if (verificationIntentId) {
 
   socket.on('verification_result', (data) => {
     console.log('%c socket:result', 'color: #b0b', data);
+    if (data.status === 'requires_action') {
+      updateResponseContainer('It looks like we need a bit more information to verify your identity');
+    }
     if (data.status === 'succeeded') {
       updateResponseContainer(data);
     }
