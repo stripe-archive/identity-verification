@@ -1,23 +1,32 @@
 /* Variables */
 :root {
-  --gray-offset: rgba(0, 0, 0, 0.03);
+  --accent-color: #0066f0;
+  --form-width: 620px;
   --gray-border: rgba(0, 0, 0, 0.15);
+  --gray-dark: rgba(0, 0, 0, 0.9);
   --gray-light: rgba(0, 0, 0, 0.4);
   --gray-mid: rgba(0, 0, 0, 0.7);
-  --gray-dark: rgba(0, 0, 0, 0.9);
-  --body-color: var(--gray-mid);
+  --gray-offset: rgba(0, 0, 0, 0.03);
   --headline-color: var(--gray-dark);
-  --accent-color: #0066f0;
+  --body-color: #ffffff;
   --body-font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-  --radius: 6px;
+  --body-width: 800px;
   --logo-image: url("https://storage.googleapis.com/stripe-sample-images/KAVHOLM.svg");
-  --form-width: 620px;
+  --radius: 6px;
+}
+
+/* Pasha styles – Brand-overrides, can split these out */
+:root {
+  --accent-color: #15B67C;
+  --headline-color: var(--accent-color);
+  --logo-image: url("../media/rocketrides-green.svg");
 }
 
 /* Base */
 * {
   box-sizing: border-box;
 }
+
 body {
   font-family: var(--body-font-family);
   font-size: 16px;
