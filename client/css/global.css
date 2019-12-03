@@ -28,11 +28,38 @@
 }
 
 body {
+  background-image: url("../media/swirly-background.jpg");
+  background-size: cover;
+  background-position: center;
   font-family: var(--body-font-family);
   font-size: 16px;
   color: var(--body-color);
   -webkit-font-smoothing: antialiased;
 }
+
+body::before {
+  content: "";
+  position: fixed;
+  z-index: -1;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(rgba(256, 256, 256, 0), #010014 62%);
+}
+
+nav {
+  position: fixed;
+  width: 100vw;
+  padding: 2vh 0;
+}
+
+@media (max-width: 720px) {
+  nav {
+    padding: 10px 22px;
+  }
+}
+
 h1,
 h2,
 h3,
@@ -45,16 +72,25 @@ h6 {
 }
 h1 {
   font-size: 27px;
-  color: var(--headline-color);
 }
 h4 {
   font-weight: 500;
   font-size: 14px;
-  color: var(--gray-light);
+  color: #ffffff;
 }
 
 .header {
   text-transform: capitalize;
+}
+
+/* Nav */
+.nav-content {
+  max-width: var(--body-width);
+  margin: 0 auto;
+}
+
+.nav-logo {
+  background-image: url(../media/rocket-rides.svg);
 }
 
 /* Layout */
@@ -62,7 +98,7 @@ h4 {
   display: flex;
   flex-direction: row;
   width: 100%;
-  max-width: 980px;
+  max-width: var(--body-width);
   padding: 48px;
   align-content: center;
   justify-content: center;
