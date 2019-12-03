@@ -239,8 +239,7 @@ input[type="text"] {
 input[type="text"]:focus,
 button:focus,
 .focused {
-  box-shadow: 0 0 0 1px rgba(50, 151, 211, 0.3), 0 1px 1px 0 rgba(0, 0, 0, 0.07),
-    0 0 0 4px rgba(50, 151, 211, 0.3);
+  box-shadow: 0 0 0 1px rgba(50, 151, 211, 0.3), 0 1px 1px 0 rgba(0, 0, 0, 0.07), 0 0 0 4px rgba(50, 151, 211, 0.3);
   outline: none;
   z-index: 9;
 }
@@ -272,8 +271,7 @@ input[type="text"]::placeholder {
 }
 
 .sr-checkbox-label input:focus ~ .sr-checkbox-check {
-  box-shadow: 0 0 0 1px rgba(50, 151, 211, 0.3), 0 1px 1px 0 rgba(0, 0, 0, 0.07),
-    0 0 0 4px rgba(50, 151, 211, 0.3);
+  box-shadow: 0 0 0 1px rgba(50, 151, 211, 0.3), 0 1px 1px 0 rgba(0, 0, 0, 0.07), 0 0 0 4px rgba(50, 151, 211, 0.3);
   outline: none;
 }
 
@@ -304,8 +302,7 @@ input[type="text"]::placeholder {
   cursor: pointer;
 }
 .sr-select:focus {
-  box-shadow: 0 0 0 1px rgba(50, 151, 211, 0.3), 0 1px 1px 0 rgba(0, 0, 0, 0.07),
-    0 0 0 4px rgba(50, 151, 211, 0.3);
+  box-shadow: 0 0 0 1px rgba(50, 151, 211, 0.3), 0 1px 1px 0 rgba(0, 0, 0, 0.07), 0 0 0 4px rgba(50, 151, 211, 0.3);
   outline: none;
 }
 .sr-select option {
