@@ -148,6 +148,67 @@ h4 {
   margin-top: 12px;
 }
 
+/* Annotation */
+.annotation {
+  position: fixed;
+  bottom: 2vh;
+  left: 50%;
+  display: flex;
+  transform: translateX(-50%);
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 4px;
+  margin: 0;
+  max-width: var(--body-width);
+  width: 100%;
+  padding: 10px 22px;
+  background-color: #f6f9fc;
+  box-shadow: 0 13px 27px -5px rgba(50, 50, 93, 0.25), 0 8px 16px -8px rgba(0, 0, 0, 0.3);
+  font-size: 16px;
+  font-weight: bold;
+  line-height: 22px;
+}
+
+@media (max-width: 720px) {
+  .annotation {
+    bottom: 0;
+    left: 0;
+    transform: none;
+    flex-flow: row wrap;
+    border-radius: 0;
+  }
+}
+
+.annotation p {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 400;
+  color: #6a7c94;
+}
+
+@media (max-width: 720px) {
+  .annotation p {
+    order: 1;
+    margin: 10px 0 0;
+  }
+}
+
+.annotation a {
+  font-weight: 400;
+  color: #666ee8;
+}
+
+.annotation a.github {
+  background-image: url(../media/arrow-purple.svg);
+}
+
+.annotation a.stripe {
+  flex: 0 0 53px;
+  margin-right: 10px;
+  background: url(../media/stripe.svg) center center no-repeat;
+  text-indent: -9999px;
+}
+
 /* Form */
 .sr-form-row {
   margin: 16px 0;
@@ -362,10 +423,18 @@ a {
 
 a:hover {
   filter: brightness(0.8);
+  text-decoration: underline;
 }
 
 a:active {
   filter: brightness(0.5);
+}
+
+a.arrow {
+  padding-right: 20px;
+  background-image: url(../media/arrow-white.svg);
+  background-position: right center;
+  background-repeat: no-repeat;
 }
 
 /* Code block */
@@ -391,7 +460,6 @@ pre {
 @media (max-width: 720px) {
   .sr-root {
     flex-direction: column;
-    justify-content: flex-start;
     padding: 48px 20px;
     min-width: 320px;
   }
@@ -415,41 +483,6 @@ pre {
   button {
     width: 100%;
   }
-}
-
-/* Pasha styles – Brand-overrides, can split these out */
-:root {
-  --accent-color: #15B67C;
-  --headline-color: var(--accent-color);
-  --logo-image: url("../media/rocketrides.svg");
-}
-
-.pasha-image-stack {
-  display: grid;
-  grid-gap: 12px;
-  grid-template-columns: auto auto;
-}
-
-.pasha-image-stack img {
-  border-radius: var(--radius);
-  background-color: var(--gray-border);
-  box-shadow: 0 7px 14px 0 rgba(50, 50, 93, 0.1),
-    0 3px 6px 0 rgba(0, 0, 0, 0.07);
-  transition: all 0.8s ease;
-  opacity: 0;
-}
-
-.pasha-image-stack img:nth-child(1) {
-  transform: translate(12px, -12px);
-  opacity: 1;
-}
-.pasha-image-stack img:nth-child(2) {
-  transform: translate(-24px, 16px);
-  opacity: 1;
-}
-.pasha-image-stack img:nth-child(3) {
-  transform: translate(68px, -100px);
-  opacity: 1;
 }
 
 /* todo: spinner/processing state, errors, animations */
