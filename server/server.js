@@ -176,8 +176,9 @@ io.on('connect', (socket) => {
     console.log('socket:acknowledge', verificationStore);
 
     verificationIntent.get(verificationIntentId, (err, response) => {
-      console.log('GET', err, response);
+      console.log('GET', err, response.status);
       if (response) {
+        response.status = 'processing'; // TODO: remove testing hack
         socket.emit('acknowledge', response);
       } else if (err) {
         socket.emit('exception', {
