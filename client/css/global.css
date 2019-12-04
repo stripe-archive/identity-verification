@@ -1,13 +1,21 @@
 /* Variables */
 :root {
+  --gray-border: rgba(0, 0, 0, 0.15);
+  --gray-dark:   rgba(0, 0, 0, 0.9);
+  --gray-light:  rgba(0, 0, 0, 0.4);
+  --gray-mid:    rgba(0, 0, 0, 0.7);
+  --gray-offset: rgba(0, 0, 0, 0.03);
+  --cyan-4:      #3297d3;
+  --green-4:     #24b47e;
+  --yellow-4:    #e39f48;
+  --red-4:       #e25950;
+}
+
+:root {
   --accent-color: #0066f0;
   --form-width: 620px;
-  --gray-border: rgba(0, 0, 0, 0.15);
-  --gray-dark: rgba(0, 0, 0, 0.9);
-  --gray-light: rgba(0, 0, 0, 0.4);
-  --gray-mid: rgba(0, 0, 0, 0.7);
-  --gray-offset: rgba(0, 0, 0, 0.03);
   --headline-color: var(--gray-dark);
+  --background-color: #f6f9fc;
   --body-color: #ffffff;
   --body-font-family: -apple-system, BlinkMacSystemFont, sans-serif;
   --body-width: 800px;
@@ -15,7 +23,7 @@
   --radius: 6px;
 }
 
-/* Pasha styles – Brand-overrides, can split these out */
+/* Rocket Rides styles – Brand-overrides, can split these out */
 :root {
   --accent-color: #15B67C;
   --headline-color: var(--accent-color);
@@ -50,6 +58,7 @@ body::before {
 
 nav {
   position: fixed;
+  z-index: 1;
   width: 100vw;
   padding: 2vh 0;
 }
@@ -162,7 +171,7 @@ h4 {
   max-width: var(--body-width);
   width: 100%;
   padding: 10px 22px;
-  background-color: #f6f9fc;
+  background-color: var(--background-color);
   box-shadow: 0 13px 27px -5px rgba(50, 50, 93, 0.25), 0 8px 16px -8px rgba(0, 0, 0, 0.3);
   font-size: 16px;
   font-weight: bold;
@@ -406,10 +415,9 @@ button.clear-button {
 
 .button-container {
   display: flex;
-  padding: 5px;
 }
 .button-container button {
-  margin: 5px;
+  margin-right: 10px;
 }
 
 a {
