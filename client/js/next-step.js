@@ -1,27 +1,77 @@
 const verificationIntentId = sessionStorage.getItem(window.stripeSample.VI_STORAGE_KEY);
+let cancelProgress;
 
-const updateResponseContainer = (response) => {
-  const responseContainer = document.querySelector('#response');
-  let responseText = response;
-  if (typeof response !== 'string') {
-    responseText = JSON.stringify(response, null, 2);
+/*
+ * Set increasing longer timeouts
+ */
+const easingTimeout = (delay, fn) => {
+  let id;
+  const invoker = () => {
+    delay = Math.round(delay + 1);
+    if (delay) {
+      id = setTimeout(invoker, delay);
+    } else {
+      id = null;
+    }
+    fn();
+  };
+  id = setTimeout(invoker, delay);
+  return (() => {
+    if (id) {
+      clearTimeout(id);
+      id = null;
+    }
+  });
+};
+
+/*
+ * Gradually slow down the progress bar
+ */
+const advanceProgress = () => {
+  let progressValue = parseFloat(sessionStorage.getItem('progress')) || 1.0;
+  progressValue += Math.random() * 0.4; // slightly randomize the progress
+  if (progressValue >= 98) {
+    cancelProgress();
+    progressValue = 98;
   }
-  responseContainer.textContent = responseText;
+  const progressBar = document.querySelector('#progress');
+  progressBar.style.width = `${progressValue}%`;
+  sessionStorage.setItem('progress', progressValue);
+};
+
+/*
+ * Show the VerificationIntent response JSON
+ */
+const updateResponseContainer = (response) => {
+  if (response.status !== 'processing') {
+    const responseContainer = document.querySelector('#response');
+    let responseText = response;
+    if (typeof response !== 'string') {
+      responseText = JSON.stringify(response, null, 2);
+    }
+    responseContainer.textContent = responseText;
+  } else {
+    cancelProgress = easingTimeout(1, advanceProgress);
+  }
 }
 
+/*
+ * Update the h4 with the VerificationIntent status
+ */
 const updateHeader = (status) => {
   const header = document.querySelector('h4.header');
   header.textContent = status.replace(/_/g, ' ');
 }
 
+/*
+ * Handler for when the API returns a data response
+ */
 const handleDataResponse = (data) => {
   updateResponseContainer(data);
   updateHeader(data.status);
-  if (data.status === 'requires_action') {
-    const tryAgainButton = document.querySelector('#try-again');
-    tryAgainButton.classList.remove('hidden');
-  }
 }
+
+
 
 if (verificationIntentId) {
   const socket = io();
