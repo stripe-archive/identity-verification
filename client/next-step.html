@@ -15,21 +15,37 @@
   </head>
 
   <body>
+    <nav>
+      <div class="nav-content">
+        <a href="/">
+          <img src="../media/rocketrides.svg">
+        </a>
+      </div>
+    </nav>
     <div class="sr-root">
       <div class="sr-main">
-        <header class="sr-header">
-          <div class="sr-header__logo"></div>
-        </header>
         <div class="sr-verification-summary">
-          <h1 class="title">Identity Verification</h1>
-          <h4 class="header"></h4>
+          <h1 class="title">Identity verification</h1>
+          <h4 class="status-header">
+            <div class="status-icon"></div>
+            <span class="status-text"></span>
+          </h4>
         </div>
-        <pre id="response" class="sr-callout">Waiting for response...</pre>
-        <div class="button-container">
-          <button id="try-again" class="clear-button hidden">Try Again</button>
-          <button id="start-over">Start Over</button>
+        <div class="progress-bar hidden">
+          <div id="progress" class="progress"></div>
         </div>
+        <pre id="response" class="sr-callout response-json hidden">Waiting for response...</pre>
+        <a href="/">
+          <button id="start-over" class="clear-button">Start over</button>
+        </a>
       </div>
     </div>
+    <footer>
+      <div class="annotation">
+        <a class="stripe" href="https://stripe.com" target="_blank">Stripe</a>
+        <p>Rocket Rides is a demo for <a href="https://stripe.com/docs/identity" target="_blank">Stripe identity verification</a>. It is not a real product.</p>
+        <a class="github arrow" href="https://stripe.com/docs/identity#access" target="_blank">Sign up for the beta</a>
+      </div>
+    </footer>
   </body>
 </html>

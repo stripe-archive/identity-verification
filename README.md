@@ -1,42 +1,10 @@
 # Identity Verification
-Charging a card consists of three steps:
-
-**🕵️ Authentication -** Card information is sent to the card issuer for verification. Some cards may require the cardholder to strongly authenticate the purchase through protocols like [3D Secure](https://stripe.com/ie/guides/3d-secure-2). 
-
-**💁 Authorization -** Funds from the customer's account are put on hold but not transferred to the merchant. 
-
-**💸 Capture -** Funds are transferred to the merchant's account and the payment is complete.
-
-The [Payment Intents API](https://stripe.com/docs/api/payment_intents) abstracts away these three stages by handling all steps of the process through the [confirm method](https://stripe.com/docs/api/payment_intents/confirm). If you want to split the authorization + capture steps to place a hold on a customer's card and capture later after a certain event, set capture_method to manual when creating a PaymentIntent.
-
-Note that funds must be captured within **7 days** of authorizing the card or the PaymentIntent reverts back to a status of "requires_payment_method". If you want to charge a customer more than 7 days after collecting their card details see our sample on [saving cards](https://github.com/stripe-samples/saving-card-without-payment).
 
 **Demo**
 
-See a [hosted version](https://nbzjj.sse.codesandbox.io/) of the demo or fork a copy on [codesandbox.io](https://codesandbox.io/s/stripe-sample-placing-a-hold-nbzjj)
+See a [hosted version](https://ybezk.sse.codesandbox.io/) of the demo or fork a copy on [codesandbox.io](https://codesandbox.io/s/stripe-identity-verification-webhooks-ybezk)
 
-The demo is running in test mode -- use `4242424242424242` as a test card number with any CVC code + a future expiration date.
-
-Use the `4000000000003220` test card number to trigger a 3D Secure challenge flow.
-
-Read more about testing on Stripe at https://stripe.com/docs/testing.
-
-<img src="./identity-verification" alt="Identity verification start page" align="center">
-
-There are two implementations depending on whether you want to use webhooks for any post-payment process: 
-* **[/using-webhooks](/using-webhooks)** Confirms the payment on the client and requires using webhooks or other async event handlers for any post-payment logic (e.g. sending email receipts, fulfilling orders). 
-* **[/without-webhooks](/without-webhooks)** Confirms the payment on the server and allows you to run any post-payment logic right after.
-
-This sample shows:
-<!-- prettier-ignore -->
-|     | Using webhooks | Without webhooks
-:--- | :---: | :---:
-💳 **Collecting card and cardholder details.** Both integrations use [Stripe Elements](https://stripe.com/docs/stripe-js) to build a custom checkout form. | ✅  | ✅ |
-🙅 **Handling card authentication requests and declines.** Attempts to charge a card can fail if the bank declines the purchase or requests additional authentication.  | ✅  | ✅ |
-💁 **Placing a hold on a card.** By setting capture_method to "manual" when creating a PaymentIntent, you split the authorization and capture steps. | ✅ | ✅ |
-↪️ **Using webhooks to respond to a hold being placed on the card.** Confirming the payment on the client requires using webhooks for any follow up actions, like capturing the funds. | ✅ | ❌ |
-🏦 **Easily scalable to other payment methods.** Webhooks enable easy adoption of other asynchroneous payment methods like direct debits and push-based payment flows. | ✅ | ❌ |
-
+![app screenshots](./screenshots/pages.png)
 
 ## How to run locally
 
@@ -47,7 +15,7 @@ Follow the steps below to run locally.
 **1. Clone the repository:**
 
 ```
-git clone https://github.com/stripe-samples/placing-a-hold
+git clone https://github.com/bz-stripe/identity-verification-sample
 ```
 
 **2. Copy the .env.example to a .env file:**

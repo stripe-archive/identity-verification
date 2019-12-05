@@ -1,29 +1,76 @@
 /* Variables */
 :root {
-  --gray-offset: rgba(0, 0, 0, 0.03);
   --gray-border: rgba(0, 0, 0, 0.15);
-  --gray-light: rgba(0, 0, 0, 0.4);
-  --gray-mid: rgba(0, 0, 0, 0.7);
-  --gray-dark: rgba(0, 0, 0, 0.9);
-  --body-color: var(--gray-mid);
-  --headline-color: var(--gray-dark);
+  --gray-dark:   rgba(0, 0, 0, 0.9);
+  --gray-light:  rgba(0, 0, 0, 0.4);
+  --gray-mid:    rgba(0, 0, 0, 0.7);
+  --gray-offset: rgba(0, 0, 0, 0.03);
+  --cyan-4:      #3297d3;
+  --green-4:     #24b47e;
+  --yellow-4:    #e39f48;
+  --red-4:       #e25950;
+}
+
+:root {
   --accent-color: #0066f0;
-  --body-font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-  --radius: 6px;
-  --logo-image: url("https://storage.googleapis.com/stripe-sample-images/KAVHOLM.svg");
   --form-width: 620px;
+  --headline-color: var(--gray-dark);
+  --background-color: #010014;
+  --background-light: #f6f9fc;
+  --body-color: #ffffff;
+  --body-font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  --body-width: 800px;
+  --logo-image: url("https://storage.googleapis.com/stripe-sample-images/KAVHOLM.svg");
+  --radius: 6px;
+}
+
+/* Rocket Rides styles – Brand-overrides, can split these out */
+:root {
+  --accent-color: #15B67C;
+  --headline-color: var(--accent-color);
+  --logo-image: url("../media/rocketrides-green.svg");
 }
 
 /* Base */
 * {
   box-sizing: border-box;
 }
+
 body {
+  padding: 0 1em;
+  background-image: url("../media/swirly-background.jpg");
+  background-size: cover;
+  background-position: center;
   font-family: var(--body-font-family);
   font-size: 16px;
   color: var(--body-color);
   -webkit-font-smoothing: antialiased;
 }
+
+body::before {
+  content: "";
+  position: fixed;
+  z-index: -1;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(rgba(256, 256, 256, 0), var(--background-color) 62%);
+}
+
+nav {
+  position: fixed;
+  z-index: 1;
+  width: 100vw;
+  padding: 2vh 0;
+}
+
+@media (max-width: 720px) {
+  nav {
+    padding: 10px 22px;
+  }
+}
+
 h1,
 h2,
 h3,
@@ -31,21 +78,65 @@ h4,
 h5,
 h6 {
   color: var(--body-color);
-  margin-top: 2px;
-  margin-bottom: 4px;
+  margin-top: 0.38rem;
+  margin-bottom: 0.62rem;
 }
 h1 {
   font-size: 27px;
-  color: var(--headline-color);
 }
 h4 {
   font-weight: 500;
-  font-size: 14px;
-  color: var(--gray-light);
+  font-size: 1.1em;
+  color: #ffffff;
 }
 
-.header {
+.title {
+  font-size: 3.8em;
+}
+
+.status-header {
+  display: flex;
+  align-items: center;
+  margin-top: 0.62em;
+}
+
+.status-text {
   text-transform: capitalize;
+}
+
+.status-text.processing {
+  color: var(--cyan-4);
+}
+
+.status-text.succeeded {
+  color: var(--green-4);
+}
+
+.status-text.requires_action {
+  color: var(--yellow-4);
+}
+
+.status-text.canceled,
+.status-text.error {
+  color: var(--red-4);
+}
+
+.status-icon {
+  margin-right: 0.38em;
+  width: 16px;
+  height: 16px;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Nav */
+.nav-content {
+  max-width: var(--body-width);
+  margin: 0 auto;
+}
+
+.nav-logo {
+  background-image: url(../media/rocket-rides.svg);
 }
 
 /* Layout */
@@ -53,8 +144,7 @@ h4 {
   display: flex;
   flex-direction: row;
   width: 100%;
-  max-width: 980px;
-  padding: 48px;
+  max-width: var(--body-width);
   align-content: center;
   justify-content: center;
   height: auto;
@@ -76,7 +166,7 @@ h4 {
   align-self: center;
 }
 .sr-main {
-  width: var(--form-width);
+  width: var(--body-width);
 }
 .sr-content {
   padding-left: 48px;
@@ -101,6 +191,67 @@ h4 {
   font-size: 13px;
   line-height: 17px;
   margin-top: 12px;
+}
+
+/* Annotation */
+.annotation {
+  position: fixed;
+  bottom: 3.8vh;
+  left: 50%;
+  display: flex;
+  transform: translateX(-50%);
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 4px;
+  margin: 0;
+  max-width: var(--body-width);
+  width: 100%;
+  padding: 10px 22px;
+  background-color: var(--background-light);
+  box-shadow: 0 13px 27px -5px rgba(50, 50, 93, 0.25), 0 8px 16px -8px rgba(0, 0, 0, 0.3);
+  font-size: 16px;
+  font-weight: bold;
+  line-height: 22px;
+}
+
+@media (max-width: 720px) {
+  .annotation {
+    bottom: 0;
+    left: 0;
+    transform: none;
+    flex-flow: row wrap;
+    border-radius: 0;
+  }
+}
+
+.annotation p {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 400;
+  color: #6a7c94;
+}
+
+@media (max-width: 720px) {
+  .annotation p {
+    order: 1;
+    margin: 10px 0 0;
+  }
+}
+
+.annotation a {
+  font-weight: 400;
+  color: #666ee8;
+}
+
+.annotation a.github {
+  background-image: url(../media/arrow-purple.svg);
+}
+
+.annotation a.stripe {
+  flex: 0 0 53px;
+  margin-right: 10px;
+  background: url(../media/stripe.svg) center center no-repeat;
+  text-indent: -9999px;
 }
 
 /* Form */
@@ -133,8 +284,7 @@ input[type="text"] {
 input[type="text"]:focus,
 button:focus,
 .focused {
-  box-shadow: 0 0 0 1px rgba(50, 151, 211, 0.3), 0 1px 1px 0 rgba(0, 0, 0, 0.07),
-    0 0 0 4px rgba(50, 151, 211, 0.3);
+  box-shadow: 0 0 0 1px rgba(50, 151, 211, 0.3), 0 1px 1px 0 rgba(0, 0, 0, 0.07), 0 0 0 4px rgba(50, 151, 211, 0.3);
   outline: none;
   z-index: 9;
 }
@@ -166,8 +316,7 @@ input[type="text"]::placeholder {
 }
 
 .sr-checkbox-label input:focus ~ .sr-checkbox-check {
-  box-shadow: 0 0 0 1px rgba(50, 151, 211, 0.3), 0 1px 1px 0 rgba(0, 0, 0, 0.07),
-    0 0 0 4px rgba(50, 151, 211, 0.3);
+  box-shadow: 0 0 0 1px rgba(50, 151, 211, 0.3), 0 1px 1px 0 rgba(0, 0, 0, 0.07), 0 0 0 4px rgba(50, 151, 211, 0.3);
   outline: none;
 }
 
@@ -198,8 +347,7 @@ input[type="text"]::placeholder {
   cursor: pointer;
 }
 .sr-select:focus {
-  box-shadow: 0 0 0 1px rgba(50, 151, 211, 0.3), 0 1px 1px 0 rgba(0, 0, 0, 0.07),
-    0 0 0 4px rgba(50, 151, 211, 0.3);
+  box-shadow: 0 0 0 1px rgba(50, 151, 211, 0.3), 0 1px 1px 0 rgba(0, 0, 0, 0.07), 0 0 0 4px rgba(50, 151, 211, 0.3);
   outline: none;
 }
 .sr-select option {
@@ -271,7 +419,7 @@ button {
   border: 0;
   border-radius: var(--radius);
   padding: 12px 16px;
-  width: 62%;
+  width: 38%;
   background: var(--accent-color);
   color: white;
   font-weight: 600;
@@ -303,10 +451,9 @@ button.clear-button {
 
 .button-container {
   display: flex;
-  padding: 5px;
 }
 .button-container button {
-  margin: 5px;
+  margin-right: 10px;
 }
 
 a {
@@ -317,24 +464,48 @@ a {
 
 a:hover {
   filter: brightness(0.8);
+  text-decoration: underline;
 }
 
 a:active {
   filter: brightness(0.5);
 }
 
-/* Code block */
-.sr-callout {
-  background: var(--gray-offset);
-  padding: 12px;
-  border-radius: var(--radius);
-  max-height: 50vh;
-  overflow: auto;
+a.arrow {
+  padding-right: 20px;
+  background-image: url(../media/arrow-white.svg);
+  background-position: right center;
+  background-repeat: no-repeat;
 }
+
+/* Code block */
 code,
 pre {
   font-family: "SF Mono", "IBM Plex Mono", "Menlo", monospace;
   font-size: 12px;
+}
+
+.sr-callout {
+  background: var(--gray-offset);
+  padding: 12px;
+  border-radius: var(--radius);
+  overflow: auto;
+}
+
+.response-json {
+  position: relative;
+  max-height: 38vh;
+  overflow: hidden;
+}
+
+.response-json:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(transparent 18%, var(--background-color) 68%);
 }
 
 /* Stripe Element placeholder */
@@ -346,7 +517,6 @@ pre {
 @media (max-width: 720px) {
   .sr-root {
     flex-direction: column;
-    justify-content: flex-start;
     padding: 48px 20px;
     min-width: 320px;
   }
@@ -370,41 +540,6 @@ pre {
   button {
     width: 100%;
   }
-}
-
-/* Pasha styles – Brand-overrides, can split these out */
-:root {
-  --accent-color: #15B67C;
-  --headline-color: var(--accent-color);
-  --logo-image: url("../media/rocketrides.svg");
-}
-
-.pasha-image-stack {
-  display: grid;
-  grid-gap: 12px;
-  grid-template-columns: auto auto;
-}
-
-.pasha-image-stack img {
-  border-radius: var(--radius);
-  background-color: var(--gray-border);
-  box-shadow: 0 7px 14px 0 rgba(50, 50, 93, 0.1),
-    0 3px 6px 0 rgba(0, 0, 0, 0.07);
-  transition: all 0.8s ease;
-  opacity: 0;
-}
-
-.pasha-image-stack img:nth-child(1) {
-  transform: translate(12px, -12px);
-  opacity: 1;
-}
-.pasha-image-stack img:nth-child(2) {
-  transform: translate(-24px, 16px);
-  opacity: 1;
-}
-.pasha-image-stack img:nth-child(3) {
-  transform: translate(68px, -100px);
-  opacity: 1;
 }
 
 /* todo: spinner/processing state, errors, animations */
@@ -480,7 +615,7 @@ pre {
 /* Animated form */
 
 .sr-root {
-  animation: 0.4s form-in;
+  animation: 0.4s fade-in;
   animation-fill-mode: both;
   animation-timing-function: ease;
 }
@@ -492,27 +627,22 @@ pre {
   transform-origin: 50% 0%;
 }
 
-/* need saas for loop :D  */
-.sr-verification-form .sr-form-row:nth-child(1) {
-  animation-delay: 0;
+.hide {
+  animation: 0.4s fade-out;
+  animation-fill-mode: both;
+  animation-timing-function: ease;
 }
-.sr-verification-form .sr-form-row:nth-child(2) {
-  animation-delay: 60ms;
+
+.unhide {
+  animation: 0.4s fade-in;
+  animation-fill-mode: both;
+  animation-timing-function: ease;
 }
-.sr-verification-form .sr-form-row:nth-child(3) {
-  animation-delay: 120ms;
-}
-.sr-verification-form .sr-form-row:nth-child(4) {
-  animation-delay: 180ms;
-}
-.sr-verification-form .sr-form-row:nth-child(5) {
-  animation-delay: 240ms;
-}
-.sr-verification-form .sr-form-row:nth-child(6) {
-  animation-delay: 300ms;
-}
+
 .hidden {
   display: none;
+  height: 0;
+  transition: height 0.38s ease-in-out;
 }
 
 @keyframes field-in {
@@ -526,7 +656,7 @@ pre {
   }
 }
 
-@keyframes form-in {
+@keyframes fade-in {
   0% {
     opacity: 0;
     transform: scale(0.98);
@@ -534,5 +664,66 @@ pre {
   100% {
     opacity: 1;
     transform: scale(1);
+  }
+}
+
+@keyframes expand-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.98, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fade-out {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.98, 0);
+  }
+}
+
+/* Progress */
+
+.progress-bar {
+  margin-bottom: 1.8em;
+  border: 1px solid rgba(21,182,124, 0.18);
+  border-radius: 4px;
+  width: 100%;
+}
+
+.progress {
+  width: 5%;
+  height: 1em;
+  border-radius: 4px;
+  background:
+    linear-gradient(
+      -45deg,
+      rgba(255, 255, 255, 0.15) 25%,
+      transparent 25%,
+      transparent 50%,
+      rgba(255, 255, 255, 0.15) 50%,
+      rgba(255, 255, 255, 0.15) 75%,
+      transparent 75%
+    )
+    left/30px 30px repeat-x,
+    linear-gradient(to right, #0c6d4a, var(--accent-color) 62%) left/var(--p, 100%) fixed,
+    var(--background-color);
+  animation: progress-change 1s linear infinite;
+  transition: width 0.68s ease-in-out;
+}
+
+@keyframes progress-change {
+  from {
+    background-position: 0 0, left
+  }
+  to {
+    background-position: 30px 0, left
   }
 }
