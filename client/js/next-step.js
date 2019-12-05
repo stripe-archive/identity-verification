@@ -1,5 +1,15 @@
-const verificationIntentId = sessionStorage.getItem(window.stripeSample.VI_STORAGE_KEY);
-let cancelProgress;
+const hide = (element) => {
+  if (element) {
+    element.classList.add('hide');
+  }
+}
+
+const unhide = (element) => {
+  if (element && element.classList.contains('hidden')) {
+    element.classList.remove('hidden');
+    element.classList.add('unhide');
+  }
+}
 
 /*
  * Set increasing longer timeouts
@@ -27,8 +37,9 @@ const easingTimeout = (delay, fn) => {
 /*
  * Gradually slow down the progress bar
  */
+let cancelProgress;
 const advanceProgress = () => {
-  let progressValue = parseFloat(sessionStorage.getItem('progress')) || 1.0;
+  let progressValue = parseFloat(sessionStorage.getItem('progress')) || 5.0;
   progressValue += Math.random() * 0.4; // slightly randomize the progress
   if (progressValue >= 98) {
     cancelProgress();
@@ -44,6 +55,8 @@ const advanceProgress = () => {
  */
 const updateResponseContainer = (response) => {
   if (response.status !== 'processing') {
+    unhide(document.querySelector('#response'));
+    hide(document.querySelector('.progress-bar'));
     const responseContainer = document.querySelector('#response');
     let responseText = response;
     if (typeof response !== 'string') {
@@ -51,6 +64,7 @@ const updateResponseContainer = (response) => {
     }
     responseContainer.textContent = responseText;
   } else {
+    unhide(document.querySelector('.progress-bar'));
     cancelProgress = easingTimeout(1, advanceProgress);
   }
 }
@@ -58,9 +72,20 @@ const updateResponseContainer = (response) => {
 /*
  * Update the h4 with the VerificationIntent status
  */
-const updateHeader = (status) => {
-  const header = document.querySelector('h4.header');
-  header.textContent = status.replace(/_/g, ' ');
+const updateHeader = (newStatus) => {
+  const currentStatus = sessionStorage.getItem('vi_status') || '';
+  sessionStorage.setItem('vi_status', newStatus);
+
+  const header = document.querySelector('.status-text');
+  header.textContent = newStatus.replace(/_/g, ' ');
+
+  const statusIcon = document.querySelector('.status-icon');
+  statusIcon.style.backgroundImage = `url('../media/Icon--${newStatus}.svg')`;
+
+  if (currentStatus) {
+    header.classList.remove(currentStatus);
+  }
+  header.classList.add(newStatus);
 }
 
 /*
@@ -72,6 +97,9 @@ const handleDataResponse = (data) => {
 }
 
 
+
+const urlParams = new URLSearchParams(window.location.search);
+const verificationIntentId = urlParams.get('verification_intent_id');
 
 if (verificationIntentId) {
   const socket = io();
@@ -92,7 +120,7 @@ if (verificationIntentId) {
     console.log('%c socket:error', 'color: #b0b', error);
     if (error.errorCode === 'VERIFICATION_INTENT_INTENT_NOT_FOUND') {
       updateResponseContainer('Oops, the server could not find a recent verification. Please start over.');
-      updateHeader('Error');
+      updateHeader('error');
     }
   });
 
@@ -102,16 +130,9 @@ if (verificationIntentId) {
   });
 } else {
   updateResponseContainer('Oops, could not find a recent verification. Please start over.');
-  updateHeader('Error');
+  updateHeader('error');
   console.log('Could not find an existing verification.');
 }
-
-
-const startOverButton = document.querySelector('#start-over');
-startOverButton.addEventListener('click', () => {
-  sessionStorage.removeItem(window.stripeSample.VI_STORAGE_KEY);
-  document.location.href = '/';
-});
 
 // Show message in case a verification is pending
 if (document.location.search.includes('existing-verification')) {
