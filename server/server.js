@@ -28,7 +28,6 @@ const verificationIntent = new VerificationIntent(stripe);
 
 // TODO replace this with a database for persistent state
 const verificationStore = {};
-const isValidVerificationIntentId = (id) => (id in verificationStore);
 
 
 app.use(express.static(process.env.STATIC_DIR));
