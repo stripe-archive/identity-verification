@@ -28,7 +28,6 @@ const verificationIntent = new VerificationIntent(stripe);
 
 // TODO replace this with a database for persistent state
 const verificationStore = {};
-const isValidVerificationIntentId = (id) => (id in verificationStore);
 
 
 app.use(express.static(process.env.STATIC_DIR));
@@ -115,7 +114,7 @@ const simulateSlowEvent = (data, delay) => {
  */
 app.post('/webhook', async (req, res) => {
   // Check if webhook signing is configured.
-  if (env.parsed.STRIPE_WEBHOOK_SECRET) {
+  if (process.env.STRIPE_WEBHOOK_SECRET) {
     // Retrieve the event by verifying the signature using the raw body and secret.
     let event;
     let signature = req.headers['stripe-signature'];
@@ -123,7 +122,7 @@ app.post('/webhook', async (req, res) => {
       event = stripe.webhooks.constructEvent(
         req.rawBody,
         signature,
-        env.parsed.STRIPE_WEBHOOK_SECRET
+        process.env.STRIPE_WEBHOOK_SECRET
       );
     } catch (err) {
       console.log('\nWebhook signature verification failed.');
