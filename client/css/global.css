@@ -455,6 +455,8 @@ button.clear-button {
 }
 .button-container button {
   margin-right: 10px;
+  width: auto;
+  min-width: 16vh;
 }
 
 a {
