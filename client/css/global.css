@@ -38,6 +38,7 @@
 
 body {
   padding: 0 1em;
+  background-color: var(--background-color);
   background-image: url("../media/swirly-background.jpg");
   background-size: cover;
   background-position: center;
