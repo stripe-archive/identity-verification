@@ -57,6 +57,10 @@ const updateResponseContainer = (response) => {
   if (response.status !== 'processing') {
     unhide(document.querySelector('#response'));
     hide(document.querySelector('.progress-bar'));
+
+    const responseJson = document.querySelector('.response-json');
+    responseJson.classList.add(response.status);
+
     const responseContainer = document.querySelector('#response');
     let responseText = response;
     if (typeof response !== 'string') {

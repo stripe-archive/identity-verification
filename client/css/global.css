@@ -501,7 +501,7 @@ pre {
   overflow: hidden;
 }
 
-.response-json:before {
+.response-json.succeeded:before {
   content: '';
   position: absolute;
   top: 0;
