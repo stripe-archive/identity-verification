@@ -96,20 +96,6 @@ app.post('/create-verification-intent', async (req, res) => {
 
 
 /*
- * Simulate slow webhook events
- */
-const simulateSlowEvent = (data, delay) => {
-  setTimeout(() => {
-    // console.log('\nVerificationIntent updated', data, verificationStore);
-    const socketId = verificationStore[data.id];
-    if (socketId) {
-      io.to(socketId).emit('verification_result', data);
-    }
-  }, delay);
-}
-
-
-/*
  * Webhook handler for asynchronous events.
  */
 app.post('/webhook', async (req, res) => {
@@ -145,8 +131,10 @@ app.post('/webhook', async (req, res) => {
       break;
     case 'identity.verification_intent.updated':
     case 'identity.verification_intent.succeeded':
-      // TODO don't simulate slow event
-      simulateSlowEvent(data, 10000);
+      const socketId = verificationStore[data.id];
+      if (socketId) {
+        io.to(socketId).emit('verification_result', data);
+      }
       break;
   }
 
@@ -171,6 +159,7 @@ io.on('connect', (socket) => {
 
   socket.on('init', (data) => {
     const { verificationIntentId } = data;
+    // TODO: check cache with exponential back-off
     verificationStore[verificationIntentId] = socket.id;
     console.log('socket:acknowledge', verificationStore);
 
