@@ -181,7 +181,7 @@ io.on('connect', (socket) => {
         socket.emit('acknowledge', response);
       } else if (err) {
         socket.emit('exception', {
-          errorCode: 'VERIFICATION_INTENT_INTENT_NOT_FOUND',
+          errorCode: 'VERIFICATION_INTENT_NOT_FOUND',
           errorMessage: 'Server could not find a recent verification record'
         });
       }

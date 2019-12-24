@@ -122,7 +122,7 @@ if (verificationIntentId) {
 
   socket.on('exception', (error) => {
     console.log('%c socket:error', 'color: #b0b', error);
-    if (error.errorCode === 'VERIFICATION_INTENT_INTENT_NOT_FOUND') {
+    if (error.errorCode === 'VERIFICATION_INTENT_NOT_FOUND') {
       updateResponseContainer('Oops, the server could not find a recent verification. Please start over.');
       updateHeader('error');
     }
