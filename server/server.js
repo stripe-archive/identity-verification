@@ -14,6 +14,11 @@ const io = require('socket.io').listen(server);
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const StripeResource = require('stripe').StripeResource;
 
+const uuid = require('uuid/v4');
+
+// Cache
+const cache = require('./store');
+
 const VerificationIntent = StripeResource.extend({
   create: StripeResource.method({
     method: 'POST',
@@ -25,10 +30,6 @@ const VerificationIntent = StripeResource.extend({
   })
 });
 const verificationIntent = new VerificationIntent(stripe);
-
-// TODO replace this with a database for persistent state
-const verificationStore = {};
-
 
 app.use(express.static(process.env.STATIC_DIR));
 
@@ -71,23 +72,26 @@ app.get('/next-step', (req, res) => {
  */
 app.post('/create-verification-intent', async (req, res) => {
   verificationIntent.create({
-    'return_url': req.get('origin') + '/next-step?verification_intent_id={VERIFICATION_INTENT_ID}',
-    'requested_verifications': [
+    return_url: req.get('origin') + '/next-step?verification_intent_id={VERIFICATION_INTENT_ID}',
+    requested_verifications: [
       'identity_document',
-    ]
-  }, (err, response) => {
+    ],
+    metadata: {
+      userId: uuid(), // optional: pass a user's ID through the VerificationIntent API
+    },
+  }, (error, response) => {
     // asynchronously called
-    if (err) {
-      console.log('\nError:\n', error.raw);
-      res.send(err);
+    if (error) {
+      console.log('\nError:\n', erroror.raw);
+      res.send(error);
     } else if (response) {
       // console.log('\nVerificationIntent created:\n', response);
       if (response.id) {
-        verificationStore[response.id] = '';
+        cache.upsert(response.id, response);
         res.send(response);
       } else {
         res.status(500).send({
-          errorMessage: 'Verification intent contained no ID'
+          errororMessage: 'Verification intent contained no ID'
         });
       }
     }
@@ -99,6 +103,7 @@ app.post('/create-verification-intent', async (req, res) => {
  * Webhook handler for asynchronous events.
  */
 app.post('/webhook', async (req, res) => {
+  let data;
   // Check if webhook signing is configured.
   if (process.env.STRIPE_WEBHOOK_SECRET) {
     // Retrieve the event by verifying the signature using the raw body and secret.
@@ -110,9 +115,9 @@ app.post('/webhook', async (req, res) => {
         signature,
         process.env.STRIPE_WEBHOOK_SECRET
       );
-    } catch (err) {
+    } catch (error) {
       console.log('\nWebhook signature verification failed.');
-      console.log(err);
+      console.log(error);
       return res.sendStatus(400);
     }
     data = event.data.object;
@@ -131,9 +136,12 @@ app.post('/webhook', async (req, res) => {
       break;
     case 'identity.verification_intent.updated':
     case 'identity.verification_intent.succeeded':
-      const socketId = verificationStore[data.id];
+      cache.upsert(data.id, data);
+      const { socketId } = getStaticValue(data.id, 'socketId');
       if (socketId) {
-        io.to(socketId).emit('verification_result', data);
+        io.to(socketId).emit('verification_result', data.verifications[0].status);
+      } else {
+        console.log('No socket ID');
       }
       break;
   }
@@ -151,30 +159,47 @@ app.use(function (req, res, next) {
 })
 
 
+const shouldGetUpdatedVerification = (latestVerification) => (
+  !(latestVerification && (
+    latestVerification.status === 'succeeded' &&
+    latestVerification.status === 'requires_action' &&
+    latestVerification.errorType
+  ))
+);
+exports.shouldGetUpdatedVerification = shouldGetUpdatedVerification;
+
 /*
  * Handle websocket connection
  */
 io.on('connect', (socket) => {
-  // console.log('socket: connect:\t', socket.id);
+  console.log('socket: connect:\t', socket.id);
 
   socket.on('init', (data) => {
     const { verificationIntentId } = data;
     // TODO: check cache with exponential back-off
-    verificationStore[verificationIntentId] = socket.id;
     console.log('socket:acknowledge', verificationStore);
+    cache.setStaticValue(verificationIntentId, 'socketId', socket.id);
 
-    verificationIntent.get(verificationIntentId, (err, response) => {
-      if (response) {
-        console.log('GET', err, response.status);
-        // response.status = 'processing'; // TODO: remove testing hack
-        socket.emit('acknowledge', response);
-      } else if (err) {
-        socket.emit('exception', {
-          errorCode: 'VERIFICATION_INTENT_NOT_FOUND',
-          errorMessage: 'Server could not find a recent verification record'
-        });
-      }
-    });
+    if (shouldUpdateValue(verificationIntentId, shouldGetUpdatedVerification)) {
+      verificationIntent.get(verificationIntentId, (error, response) => {
+        if (response) {
+          console.log('GET', response.status);
+          // response.status = 'processing'; // TODO: remove testing hack
+          socket.emit('acknowledge', response.status);
+          cache.upsert(response.id, response);
+        } else if (error) {
+          console.log('error:', error.type);
+          cache.upsert(response.id, response);
+          socket.emit('exception', {
+            errororCode: 'VERIFICATION_INTENT_NOT_FOUND',
+            errororMessage: 'Server could not find a recent verification record'
+          });
+        }
+      });
+    } else {
+      const latestVerification = cache.getLatestValue(verificationIntentId);
+      socket.emit('acknowledge', latestVerification.status);
+    }
   });
 
   socket.on('disconnect', (reason) => {
