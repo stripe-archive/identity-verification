@@ -85,7 +85,7 @@ const updateMessage = (message) => {
   hide(document.querySelector('.progress-bar'));
 
   const responseContainer = document.querySelector('#response');
-  responseContainer.textContent = responseText;
+  responseContainer.textContent = message;
 }
 
 
