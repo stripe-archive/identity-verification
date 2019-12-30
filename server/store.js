@@ -1,5 +1,5 @@
 class Store {
-  constructor(initialStore = {}, backoff = 30000) {
+  constructor(initialStore = {}, backoff = 60000) {
     this.store = initialStore;
     this.backoff = backoff; // 30 secs
   }
