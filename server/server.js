@@ -14,10 +14,13 @@ const io = require('socket.io').listen(server);
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const StripeResource = require('stripe').StripeResource;
 
+// unique ID's
 const uuid = require('uuid/v4');
 
-// Cache
-const cache = require('./store');
+// cache
+const Store = require('./store');
+const shouldGetUpdatedVerification = require('./utils').shouldGetUpdatedVerification;
+
 
 const VerificationIntent = StripeResource.extend({
   create: StripeResource.method({
@@ -30,6 +33,7 @@ const VerificationIntent = StripeResource.extend({
   })
 });
 const verificationIntent = new VerificationIntent(stripe);
+const cache = new Store();
 
 app.use(express.static(process.env.STATIC_DIR));
 
@@ -159,46 +163,55 @@ app.use(function (req, res, next) {
 })
 
 
-const shouldGetUpdatedVerification = (latestVerification) => (
-  !(latestVerification && (
-    latestVerification.status === 'succeeded' &&
-    latestVerification.status === 'requires_action' &&
-    latestVerification.errorType
-  ))
-);
-exports.shouldGetUpdatedVerification = shouldGetUpdatedVerification;
-
 /*
  * Handle websocket connection
  */
 io.on('connect', (socket) => {
-  console.log('socket: connect:\t', socket.id);
+  console.log('socket: connect:\t', socket.id, new Date());
 
   socket.on('init', (data) => {
     const { verificationIntentId } = data;
-    // TODO: check cache with exponential back-off
-    console.log('socket:acknowledge', verificationStore);
+    console.log('socket: acknowledge:\t', verificationIntentId);
     cache.setStaticValue(verificationIntentId, 'socketId', socket.id);
+    let shouldCallApi;
+    try {
+      const latestVerification = cache.getLatestValue(verificationIntentId);
+      shouldCallApi = cache.shouldUpdateValue(
+        verificationIntentId, shouldGetUpdatedVerification(latestVerification)
+      );
+    } catch(error) {
+      shouldCallApi = true;
+    }
 
-    if (shouldUpdateValue(verificationIntentId, shouldGetUpdatedVerification)) {
+    if (shouldCallApi) {
+      console.log('GET request:\t', verificationIntentId);
       verificationIntent.get(verificationIntentId, (error, response) => {
         if (response) {
-          console.log('GET', response.status);
+          console.log('GET response:\t', response.status);
+          cache.upsert(verificationIntentId, response);
           // response.status = 'processing'; // TODO: remove testing hack
           socket.emit('acknowledge', response.status);
-          cache.upsert(response.id, response);
         } else if (error) {
-          console.log('error:', error.type);
-          cache.upsert(response.id, response);
+          console.log('error:\t', error.type);
+          cache.upsert(verificationIntentId, {error});
           socket.emit('exception', {
-            errororCode: 'VERIFICATION_INTENT_NOT_FOUND',
-            errororMessage: 'Server could not find a recent verification record'
+            errorCode: 'VERIFICATION_INTENT_NOT_FOUND',
+            errorMessage: 'Server could not find a recent verification record'
           });
         }
       });
     } else {
+      // retrieve from cache
       const latestVerification = cache.getLatestValue(verificationIntentId);
-      socket.emit('acknowledge', latestVerification.status);
+      console.log('cache:\t', latestVerification)
+      if (latestVerification.error) {
+        socket.emit('exception', {
+          errorCode: 'VERIFICATION_INTENT_NOT_FOUND',
+          errorMessage: 'Server could not find a recent verification record'
+        });
+      } else {
+        socket.emit('acknowledge', latestVerification.status);
+      }
     }
   });
 
