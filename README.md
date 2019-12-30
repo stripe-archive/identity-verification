@@ -2,7 +2,7 @@
 
 **Demo**
 
-See a [hosted version](https://ybezk.sse.codesandbox.io/) of the demo or fork a copy on [codesandbox.io](https://codesandbox.io/s/stripe-identity-verification-webhooks-ybezk)
+See a [hosted version](https://q6by6.sse.codesandbox.io/) of the demo or fork a copy on [codesandbox.io](https://codesandbox.io/s/stripe-identity-verification-v1-q6by6)
 
 ![app screenshots](./screenshots/pages.png)
 
