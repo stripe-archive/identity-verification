@@ -88,9 +88,10 @@ const updateMessage = (message) => {
   responseContainer.textContent = message;
 }
 
-
 const urlParams = new URLSearchParams(window.location.search);
 const verificationIntentId = urlParams.get('verification_intent_id');
+
+
 
 if (verificationIntentId) {
   const socket = io();
@@ -110,7 +111,7 @@ if (verificationIntentId) {
   socket.on('exception', (error) => {
     console.log('%c socket:error', 'color: #b0b', error);
     if (error.errorCode === 'VERIFICATION_INTENT_NOT_FOUND') {
-      updateMessage('Oops, the server could not find a recent verification. Please start over.');
+      updateMessage('Oops, the server could not find a recent verification.\n\nPlease start over.');
       updateHeader('error');
     }
   });
@@ -120,7 +121,7 @@ if (verificationIntentId) {
     updateHeader(status)
   });
 } else {
-  updateMessage('Oops, could not find a recent verification. Please start over.');
+  updateMessage('Oops, could not find a recent verification.\n\nPlease start over.');
   updateHeader('error');
   console.log('Could not find an existing verification.');
 }
