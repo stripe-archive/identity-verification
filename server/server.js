@@ -222,4 +222,5 @@ io.on('connect', (socket) => {
 
 
 // Start server
-server.listen(4242, () => console.log(`Node server listening on port ${4242}!`));
+const localPort = 4242;
+server.listen(localPort, () => console.log(`Node server listening on port ${localPort}!`));
