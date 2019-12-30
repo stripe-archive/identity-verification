@@ -487,6 +487,8 @@ code,
 pre {
   font-family: "SF Mono", "IBM Plex Mono", "Menlo", monospace;
   font-size: 12px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }
 
 .sr-callout {
@@ -498,6 +500,7 @@ pre {
 
 .response-json {
   position: relative;
+  margin-top: 0;
   max-height: 38vh;
   font-size: 1.18em;
 }
