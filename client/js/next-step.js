@@ -103,7 +103,7 @@ if (verificationIntentId) {
   });
 
   socket.on('acknowledge', (status) => {
-    console.log('%c socket:acknowledge', 'color: #b0b');
+    console.log('%c socket:acknowledge', 'color: #b0b', status);
     updateHeader(status);
   });
 
