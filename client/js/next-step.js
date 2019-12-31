@@ -51,29 +51,6 @@ const advanceProgress = () => {
 };
 
 /*
- * Show the VerificationIntent response JSON
- */
-const updateResponseContainer = (response) => {
-  if (response.status !== 'processing') {
-    unhide(document.querySelector('#response'));
-    hide(document.querySelector('.progress-bar'));
-
-    const responseJson = document.querySelector('.response-json');
-    responseJson.classList.add(response.status);
-
-    const responseContainer = document.querySelector('#response');
-    let responseText = response;
-    if (typeof response !== 'string') {
-      responseText = JSON.stringify(response, null, 2);
-    }
-    responseContainer.textContent = responseText;
-  } else {
-    unhide(document.querySelector('.progress-bar'));
-    cancelProgress = easingTimeout(1, advanceProgress);
-  }
-}
-
-/*
  * Update the h4 with the VerificationIntent status
  */
 const updateHeader = (newStatus) => {
@@ -93,17 +70,28 @@ const updateHeader = (newStatus) => {
 }
 
 /*
- * Handler for when the API returns a data response
+ * Show the progress bar
  */
-const handleDataResponse = (data) => {
-  updateResponseContainer(data);
-  updateHeader(data.status);
+const showProgressBar = () => {
+  unhide(document.querySelector('.progress-bar'));
+  cancelProgress = easingTimeout(1, advanceProgress);
 }
 
+/*
+ * Show a message to the user
+ */
+const updateMessage = (message) => {
+  unhide(document.querySelector('#response'));
+  hide(document.querySelector('.progress-bar'));
 
+  const responseContainer = document.querySelector('#response');
+  responseContainer.textContent = message;
+}
 
 const urlParams = new URLSearchParams(window.location.search);
 const verificationIntentId = urlParams.get('verification_intent_id');
+
+
 
 if (verificationIntentId) {
   const socket = io();
@@ -115,25 +103,25 @@ if (verificationIntentId) {
     });
   });
 
-  socket.on('acknowledge', (data) => {
-    console.log('%c socket:acknowledge', 'color: #b0b');
-    handleDataResponse(data);
+  socket.on('acknowledge', (status) => {
+    console.log('%c socket:acknowledge', 'color: #b0b', status);
+    updateHeader(status);
   });
 
   socket.on('exception', (error) => {
     console.log('%c socket:error', 'color: #b0b', error);
-    if (error.errorCode === 'VERIFICATION_INTENT_INTENT_NOT_FOUND') {
-      updateResponseContainer('Oops, the server could not find a recent verification. Please start over.');
+    if (error.errorCode === 'VERIFICATION_INTENT_NOT_FOUND') {
+      updateMessage('Oops, the server could not find a recent verification.\n\nPlease start over.');
       updateHeader('error');
     }
   });
 
-  socket.on('verification_result', (data) => {
-    console.log('%c socket:result', 'color: #b0b', data);
-    handleDataResponse(data);
+  socket.on('verification_result', (status) => {
+    console.log('%c socket:result', 'color: #b0b', status);
+    updateHeader(status)
   });
 } else {
-  updateResponseContainer('Oops, could not find a recent verification. Please start over.');
+  updateMessage('Oops, could not find a recent verification.\n\nPlease start over.');
   updateHeader('error');
   console.log('Could not find an existing verification.');
 }
