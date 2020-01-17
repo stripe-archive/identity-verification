@@ -4,7 +4,7 @@
 
 See a [hosted version](https://khw77.sse.codesandbox.io/) of the demo or fork a copy on [codesandbox.io](https://codesandbox.io/s/stripe-identity-verification-v2-khw77)
 
-![app screenshots](./screenshots/pages.png)
+![demo app recording](./screenshots/demo_app.gif)
 
 ## How to run locally
 
