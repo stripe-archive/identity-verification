@@ -1,4 +1,4 @@
-# Identity Verification
+# Identity Verification API (beta) demo app
 
 **Demo**
 
