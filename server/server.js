@@ -86,7 +86,7 @@ app.post('/create-verification-intent', async (req, res) => {
   }, (error, response) => {
     // asynchronously called
     if (error) {
-      console.log('\nError:\n', erroror.raw);
+      console.log('\nError:\n', error.raw);
       res.send(error);
     } else if (response) {
       // console.log('\nVerificationIntent created:\n', response);
