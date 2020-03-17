@@ -1,9 +1,15 @@
+/*
+ * Hide a DOM element
+ */
 var hide = function(element) {
   if (element) {
     element.classList.add('hide');
   }
 }
 
+/*
+ * Show a DOM element
+ */
 var unhide = function(element) {
   if (element && element.classList.contains('hidden')) {
     element.classList.remove('hidden');
@@ -48,6 +54,7 @@ var verificationIntentId = urlParams.get('verification_intent_id');
 if (verificationIntentId) {
   var socket = io();
 
+  // websocket event when a new connection or a re-connect
   socket.on('connect', function() {
     console.log('%c socket:connect', 'color: #b0b');
     socket.emit('init', {
@@ -55,11 +62,13 @@ if (verificationIntentId) {
     });
   });
 
+  // websocket event when the server sends a message
   socket.on('acknowledge', function(status) {
     console.log('%c socket:acknowledge', 'color: #b0b', status);
     updateHeader(status);
   });
 
+  // websocket event when the server sends an error
   socket.on('exception', function(error) {
     console.log('%c socket:error', 'color: #b0b', error);
     if (error.errorCode === 'VERIFICATION_INTENT_NOT_FOUND') {
@@ -68,6 +77,8 @@ if (verificationIntentId) {
     }
   });
 
+  // websocket event when the server sends the first VerificationIntent result
+  // TODO remove this case to simplify logic
   socket.on('verification_result', function(status) {
     console.log('%c socket:result', 'color: #b0b', status);
     updateHeader(status)
@@ -78,7 +89,7 @@ if (verificationIntentId) {
   console.log('Could not find an existing verification.');
 }
 
-// Show message in case a verification is pending
+// Show a message in case a verification is pending
 if (document.location.search.includes('existing-verification')) {
   var titleContainer = document.querySelector('.sr-verification-summary');
   var message = document.createElement('h4');

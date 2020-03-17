@@ -65,7 +65,7 @@ app.get('/', (req, res) => {
  * Serve return_url page
  */
 app.get('/next-step', (req, res) => {
-  // TODO handle return_url states
+  // TODO handle sad path cases
   const path = resolve(process.env.STATIC_DIR + '/next-step.html');
   res.sendFile(path);
 });
@@ -137,11 +137,15 @@ app.post('/webhook', async (req, res) => {
   // console.log('\nwebhook:eventType', eventType);
   switch (eventType) {
     case 'identity.verification_intent.created':
+      // no need to communicate with the client when the VerificationIntent is just created
       console.log('\nVerificationIntent created');
       break;
     case 'identity.verification_intent.updated':
     case 'identity.verification_intent.succeeded':
+      // update the cache
       cache.upsert(data.id, data);
+
+      // use the cached websocket ID to talk to the right client
       const socketId = cache.getStaticValue(data.id, 'socketId');
       if (socketId) {
         io.to(socketId).emit('verification_result', data.verifications.identity_document.status);
@@ -170,10 +174,16 @@ app.use(function (req, res, next) {
 io.on('connect', (socket) => {
   console.log('socket: connect:\t', socket.id, new Date());
 
+  // 'init' event triggers for both new connections and re-connects
   socket.on('init', (data) => {
     const { verificationIntentId } = data;
     console.log('socket: acknowledge:\t', verificationIntentId);
+
+    // store the websocket ID for later
     cache.setStaticValue(verificationIntentId, 'socketId', socket.id);
+
+    // check the cache before calling the VerificationIntent API
+    // this is especially useful when the API errors and we can exponentially backoff
     let shouldCallApi;
     try {
       const latestVerification = cache.getLatestValue(verificationIntentId);
