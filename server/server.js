@@ -75,8 +75,9 @@ app.get('/next-step', (req, res) => {
  * Handler for creating the VerificationIntent
  */
 app.post('/create-verification-intent', async (req, res) => {
+  const domain = req.get('origin') || req.header('Referer');
   verificationIntent.create({
-    return_url: req.get('origin') + '/next-step?verification_intent_id={VERIFICATION_INTENT_ID}',
+    return_url: `${domain}/next-step?verification_intent_id={VERIFICATION_INTENT_ID}`,
     requested_verifications: [
       'identity_document',
     ],
