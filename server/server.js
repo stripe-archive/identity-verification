@@ -141,9 +141,9 @@ app.post('/webhook', async (req, res) => {
     case 'identity.verification_intent.updated':
     case 'identity.verification_intent.succeeded':
       cache.upsert(data.id, data);
-      const { socketId } = getStaticValue(data.id, 'socketId');
+      const socketId = cache.getStaticValue(data.id, 'socketId');
       if (socketId) {
-        io.to(socketId).emit('verification_result', data.verifications[0].status);
+        io.to(socketId).emit('verification_result', data.verifications.identity_document.status);
       } else {
         console.log('No socket ID');
       }
