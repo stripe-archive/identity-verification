@@ -1,7 +1,7 @@
 /*
  * Calls the server to retrieve the identity verification start url
  */
-const startIdentityVerification = () => {
+var startIdentityVerification = function() {
   fetch("/create-verification-intent", {
     method: "POST",
     headers: {
@@ -10,7 +10,6 @@ const startIdentityVerification = () => {
   }).then(function(result) {
     return result.json();
   }).then(function(data) {
-    console.log('%c data', 'color: #b0b', data);
     if (data.id) {
       if (data && data.next_action && data.next_action.redirect_to_url) {
         // redirect the user to the verification flow
@@ -20,5 +19,5 @@ const startIdentityVerification = () => {
   });
 }
 
-const startButton = document.querySelector('#create-verification-intent');
+var startButton = document.getElementById('create-verification-intent');
 startButton.addEventListener('click', startIdentityVerification);

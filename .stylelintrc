@@ -1,0 +1,12 @@
+{
+  "plugins": [
+    "stylelint-no-unsupported-browser-features"
+  ],
+  "rules": {
+    "plugin/no-unsupported-browser-features": [true, {
+      "browsers": ["> 1%", "Last 2 versions", "not op_mini all"],
+      "ignore": ["rem"],
+      "severity": "warning"
+    }]
+  }
+}
