@@ -12,45 +12,6 @@ var unhide = function(element) {
 }
 
 /*
- * Set increasing longer timeouts
- */
-const easingTimeout = (delay, fn) => {
-  let id;
-  const invoker = () => {
-    delay = Math.round(delay + 1);
-    if (delay) {
-      id = setTimeout(invoker, delay);
-    } else {
-      id = null;
-    }
-    fn();
-  };
-  id = setTimeout(invoker, delay);
-  return (() => {
-    if (id) {
-      clearTimeout(id);
-      id = null;
-    }
-  });
-};
-
-/*
- * Gradually slow down the progress bar
- */
-let cancelProgress;
-const advanceProgress = () => {
-  let progressValue = parseFloat(sessionStorage.getItem('progress')) || 5.0;
-  progressValue += Math.random() * 0.4; // slightly randomize the progress
-  if (progressValue >= 98) {
-    cancelProgress();
-    progressValue = 98;
-  }
-  const progressBar = document.querySelector('#progress');
-  progressBar.style.width = `${progressValue}%`;
-  sessionStorage.setItem('progress', progressValue);
-};
-
-/*
  * Update the h4 with the VerificationIntent status
  */
 var updateHeader = function(newStatus) {
