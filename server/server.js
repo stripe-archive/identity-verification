@@ -108,7 +108,7 @@ app.post('/create-verification-intent', async (req, res) => {
  * Webhook handler for asynchronous events.
  */
 app.post('/webhook', async (req, res) => {
-  let data;
+  let data, eventType;
   // Check if webhook signing is configured.
   if (process.env.STRIPE_WEBHOOK_SECRET) {
     // Retrieve the event by verifying the signature using the raw body and secret.
@@ -150,8 +150,11 @@ app.post('/webhook', async (req, res) => {
       if (socketId) {
         io.to(socketId).emit('verification_result', data.verifications.identity_document.status);
       } else {
-        console.log('No socket ID');
+        console.log('\nNo socket ID');
       }
+      break;
+    default:
+      console.log('\nUnknown event type', eventType);
       break;
   }
 
