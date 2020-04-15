@@ -12,6 +12,7 @@ const io = require('socket.io').listen(server);
 
 // Stripe
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+stripe.setApiVersion('2020-03-02; identity_beta=v3');
 const StripeResource = require('stripe').StripeResource;
 
 // unique ID's
