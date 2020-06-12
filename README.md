@@ -20,10 +20,10 @@ git clone https://github.com/bz-stripe/identity-verification-sample
 
 **2. Copy the env.example to a .env file:**
 
-Copy the env.example file into a file named .env in the server folder. For example:
+Copy the env.example file into a file named .env in the project root folder. For example:
 
 ```
-cp env.example server/.env
+cp env.example .env
 ```
 
 You will need a Stripe account in order to run the demo. Once you set up your account, go to the Stripe [developer dashboard](https://stripe.com/docs/development#api-keys) to find your API keys and update your .env file with the keys.
