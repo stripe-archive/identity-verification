@@ -1,0 +1,1 @@
+window.stripeSample = window.stripeSample || {};
