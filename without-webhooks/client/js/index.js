@@ -1,7 +1,7 @@
 /*
  * Calls the server to retrieve the identity verification start url
  */
-var startIdentityVerification = function() {
+const startIdentityVerification = function() {
   return fetch("/create-verification-intent", {
     method: "POST",
     headers: {
@@ -16,18 +16,40 @@ var startIdentityVerification = function() {
   });
 }
 
-var openIframe = function(url) {
-  console.log('%c openIframe', 'color: #b0b', url);
-}
+const iframeContainerTemplate = `
+  <div class="modal-backdrop">
+    <div class="stripe-identity-verification-iframe">
+      <div class="iframe-header">
+        <span class="iframe-title">Verify your identity</span>
+        <img class="iframe-close" src="../media/cancel.svg">
+      </div>
+    </div>
+  </div>
+`;
 
-var startButton = document.getElementById('create-verification-intent');
+const openIframe = function(url) {
+  const iframePlaceholder = document.createElement('div');
+  document.body.appendChild(iframePlaceholder);
+  iframePlaceholder.outerHTML = iframeContainerTemplate;
+  const iframeContainer = document.querySelector('.stripe-identity-verification-iframe');
+  const iframe = document.createElement('iframe');
+  iframe.setAttribute('allow', 'camera; microphone');
+  iframe.src = url;
+  iframeContainer.appendChild(iframe);
+  return iframe;
+};
+
+const removeIframe = function() {
+};
+
+const startButton = document.getElementById('create-verification-intent');
 startButton.addEventListener('click', function() {
   startIdentityVerification().then(function(url) {
     openIframe(url);
   });
 });
 
-var newPageLink = document.getElementById('create-verification-intent-new-page');
+const newPageLink = document.getElementById('create-verification-intent-new-page');
 newPageLink.addEventListener('click', function() {
   startIdentityVerification().then(function(url) {
     // redirect the user to the verification flow
