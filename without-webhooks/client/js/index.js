@@ -17,15 +17,30 @@ const startIdentityVerification = function() {
 }
 
 const iframeContainerTemplate = `
-  <div class="modal-backdrop">
+  <div class="modal-container">
     <div class="stripe-identity-verification-iframe">
       <div class="iframe-header">
         <span class="iframe-title">Verify your identity</span>
         <img class="iframe-close" src="../media/cancel.svg">
       </div>
     </div>
+    <div class="modal-backdrop"></div>
   </div>
 `;
+
+const removeIframe = function(event) {
+  const iframeContainer = document.querySelector('.stripe-identity-verification-iframe');
+  const modalBackdrop = document.querySelector('.modal-backdrop');
+  iframeContainer.classList.add('closing');
+  modalBackdrop.classList.add('closing');
+
+  window.setTimeout(function() {
+    const modalContainer = document.querySelector('.modal-container');
+    if (modalContainer) {
+      modalContainer.parentNode.removeChild(modalContainer);
+    }
+  }, 300);
+};
 
 const openIframe = function(url) {
   const iframePlaceholder = document.createElement('div');
@@ -36,10 +51,13 @@ const openIframe = function(url) {
   iframe.setAttribute('allow', 'camera; microphone');
   iframe.src = url;
   iframeContainer.appendChild(iframe);
-  return iframe;
-};
 
-const removeIframe = function() {
+  const closeButton = document.querySelector('.iframe-close', true);
+  closeButton.addEventListener('click', removeIframe);
+  const modalBackdrop = document.querySelector('.modal-backdrop');
+  modalBackdrop.addEventListener('click', removeIframe);
+
+  return iframe;
 };
 
 const startButton = document.getElementById('create-verification-intent');

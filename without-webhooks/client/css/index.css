@@ -1,4 +1,4 @@
-.modal-backdrop {
+.modal-container {
   z-index: 2147483647;
   position: fixed;
   top: 50%;
@@ -9,14 +9,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: rgba(1, 0, 20, 0.5);
-  animation: fadeIn 0.2s;
 }
-
-.modal-backdrop.closing {
-  animation: fadeOut 0.2s;
-}
-
 
 .stripe-identity-verification-iframe {
   border-radius: 4px;
@@ -24,6 +17,7 @@
   width: 80vw;
   max-width: 480px;
   height: 90vh;
+  max-height: 90vh;
   background-color: white;
   box-shadow: 0 0.1rem 1rem rgba(1, 0, 20, 0.3);
   color: #010014;
@@ -36,8 +30,23 @@
   }
 }
 
+.modal-backdrop {
+  z-index: -1;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(1, 0, 20, 0.5);
+  animation: fadeIn 0.2s;
+}
+
+.modal-backdrop.closing {
+  animation: fadeOut 0.3s;
+}
+
 .stripe-identity-verification-iframe.closing {
-  animation: zoomIn 0.3s;
+  animation: fadeOut 0.3s, zoomOut 0.3s;
 }
 
 .iframe-header {
@@ -52,4 +61,12 @@
   border: 0;
   width: 100%;
   height: 100%;
+}
+
+.iframe-close {
+  cursor: pointer;
+}
+
+.iframe-close:hover {
+  opacity: 0.7;
 }
