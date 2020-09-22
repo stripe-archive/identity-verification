@@ -1,6 +1,6 @@
 // Copy the .env.example in the root into a .env file in this folder
-const env = require('dotenv').config({ path: './.env' });
 const { resolve } = require('path');
+const env = require('dotenv').config({ path: resolve(__dirname, '../../.env') });
 
 // Express
 const express = require('express');
@@ -36,7 +36,10 @@ const VerificationIntent = StripeResource.extend({
 const verificationIntent = new VerificationIntent(stripe);
 const cache = new Store();
 
-app.use(express.static(process.env.STATIC_DIR));
+/*
+ * Express middleware
+ */
+app.use(express.static('./client'));
 
 
 app.use(
@@ -57,7 +60,7 @@ app.use(
  */
 app.get('/', (req, res) => {
   // Display sign up page
-  const path = resolve(process.env.STATIC_DIR + '/index.html');
+  const path = resolve(__dirname, 'client/index.html');
   res.sendFile(path);
 });
 
@@ -67,7 +70,7 @@ app.get('/', (req, res) => {
  */
 app.get('/next-step', (req, res) => {
   // TODO handle sad path cases
-  const path = resolve(process.env.STATIC_DIR + '/next-step.html');
+  const path = resolve(__dirname, '../client/next-step.html');
   res.sendFile(path);
 });
 
@@ -167,7 +170,7 @@ app.post('/webhook', async (req, res) => {
  * Handle 404 responses
  */
 app.use(function (req, res, next) {
-  const path = resolve(process.env.STATIC_DIR + '/404.html');
+  const path = resolve(__dirname, '../client/404.html');
   res.status(404).sendFile(path);
 })
 
