@@ -60,7 +60,7 @@ const getVerificationIntent = function(verificationIntentId) {
   }).then(function(result) {
     return result.json();
   }).then(function(data) {
-    console.log('%c get VI', 'color: #b0b', data);
+    console.log('%c get VerificationIntent', 'color: #b0b', data);
     if (data && data.status) {
       updateHeader(data.status)
 
