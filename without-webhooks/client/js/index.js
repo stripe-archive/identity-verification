@@ -1,16 +1,20 @@
+let verificationIntentId;
+
 /*
  * Calls the server to retrieve the identity verification start url
  */
-const startIdentityVerification = function() {
+const startIdentityVerification = function(returnUrl) {
   return fetch("/create-verification-intent", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
     },
+    body: JSON.stringify({returnUrl}),
   }).then(function(result) {
     return result.json();
   }).then(function(data) {
     if (data && data.id && data.next_action && data.next_action.redirect_to_url) {
+      verificationIntentId = data.id;
       return data.next_action.redirect_to_url;
     }
   });
@@ -28,7 +32,7 @@ const iframeContainerTemplate = `
   </div>
 `;
 
-const removeIframe = function(event) {
+const closeIframe = function() {
   const iframeContainer = document.querySelector('.stripe-identity-verification-iframe');
   const modalBackdrop = document.querySelector('.modal-backdrop');
   iframeContainer.classList.add('closing');
@@ -53,9 +57,9 @@ const openIframe = function(url) {
   iframeContainer.appendChild(iframe);
 
   const closeButton = document.querySelector('.iframe-close', true);
-  closeButton.addEventListener('click', removeIframe);
+  closeButton.addEventListener('click', closeIframe);
   const modalBackdrop = document.querySelector('.modal-backdrop');
-  modalBackdrop.addEventListener('click', removeIframe);
+  modalBackdrop.addEventListener('click', closeIframe);
 
   return iframe;
 };
@@ -69,8 +73,33 @@ startButton.addEventListener('click', function() {
 
 const newPageLink = document.getElementById('create-verification-intent-new-page');
 newPageLink.addEventListener('click', function() {
-  startIdentityVerification().then(function(url) {
+  startIdentityVerification('/next-step').then(function(url) {
     // redirect the user to the verification flow
     window.open(url, '_blank');
   });
 });
+
+const resizeIframe = function(height) {
+  const iframeContainer = document.querySelector('.stripe-identity-verification-iframe');
+  iframeContainer.style.height = `${height}px`;
+}
+
+const handleIframeMessage = function(event) {
+  const data = event.data;
+  if (data) {
+    // console.log('%c data', 'color: #b0b', data);
+    if (data.type === 'load') {
+      // could also show a custom loading screen until this event fires
+    } else if (data.type === 'success') {
+      window.setTimeout(() => {
+        closeIframe()
+        if (verificationIntentId) {
+          window.location.href = `/next-step?verification_intent_id=${verificationIntentId}`;
+        }
+      }, 1600);
+    } else if (data.type === 'error') {
+      console.warn('Oops, something went wrong.');
+    }
+  }
+};
+window.addEventListener('message', handleIframeMessage);

@@ -106,7 +106,7 @@ h4 {
 }
 
 .redirect-link-container {
-  margin-top: var(--margin);
+  margin-top: 16px;
 }
 
 .redirect-link-container > a {

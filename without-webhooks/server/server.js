@@ -5,10 +5,7 @@ const env = require('dotenv').config({ path: resolve(__dirname, '../../.env') })
 // Express
 const express = require('express');
 const app = express();
-
-// Websocket
-const server = require('http').createServer(app);
-const io = require('socket.io').listen(server);
+const bodyParser = require('body-parser')
 
 // Stripe
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
@@ -17,10 +14,6 @@ const StripeResource = require('stripe').StripeResource;
 
 // unique ID's
 const uuid = require('uuid/v4');
-
-// cache
-const Store = require('./store');
-const shouldGetUpdatedVerification = require('./utils').shouldGetUpdatedVerification;
 
 
 const VerificationIntent = StripeResource.extend({
@@ -34,10 +27,11 @@ const VerificationIntent = StripeResource.extend({
   })
 });
 const verificationIntent = new VerificationIntent(stripe);
-const cache = new Store();
 
+/*
+ * Express middleware
+ */
 app.use(express.static('./client'));
-
 
 app.use(
   express.json({
@@ -51,13 +45,15 @@ app.use(
   })
 );
 
+app.use(bodyParser.json());
+
 
 /*
  * Serve homepage
  */
 app.get('/', (req, res) => {
   // Display sign up page
-  const path = resolve(process.env.STATIC_DIR + '/index.html');
+  const path = resolve(__dirname, 'client/index.html');
   res.sendFile(path);
 });
 
@@ -67,9 +63,26 @@ app.get('/', (req, res) => {
  */
 app.get('/next-step', (req, res) => {
   // TODO handle sad path cases
-  const path = resolve(process.env.STATIC_DIR + '/next-step.html');
+  const path = resolve(__dirname, '../client/next-step.html');
   res.sendFile(path);
 });
+
+
+const respondToClient = (error, responseData, res) => {
+  if (error) {
+    console.error('\nError:\n', error.raw);
+    res.send(error);
+  } else if (responseData) {
+    // console.log('\nVerificationIntent created:\n', responseData);
+    if (responseData.id) {
+      res.send(responseData);
+    } else {
+      res.status(500).send({
+        errororMessage: 'VerificationIntent contained no `id` field'
+      });
+    }
+  }
+};
 
 
 /*
@@ -77,165 +90,47 @@ app.get('/next-step', (req, res) => {
  */
 app.post('/create-verification-intent', async (req, res) => {
   const domain = req.get('origin') || req.header('Referer');
-  verificationIntent.create({
-    return_url: `${domain}/next-step?verification_intent_id={VERIFICATION_INTENT_ID}`,
+  const {returnUrl} = req.body;
+
+  const verificationIntentParams = {
     requested_verifications: [
       'identity_document',
     ],
     metadata: {
       userId: uuid(), // optional: pass a user's ID through the VerificationIntent API
     },
-  }, (error, response) => {
-    // asynchronously called
-    if (error) {
-      console.log('\nError:\n', error.raw);
-      res.send(error);
-    } else if (response) {
-      // console.log('\nVerificationIntent created:\n', response);
-      if (response.id) {
-        cache.upsert(response.id, response);
-        res.send(response);
-      } else {
-        res.status(500).send({
-          errororMessage: 'Verification intent contained no ID'
-        });
-      }
-    }
+  }
+
+  if (returnUrl) {
+    const returnUrlQueryParam = '?verification_intent_id={VERIFICATION_INTENT_ID}';
+    verificationIntentParams.return_url = `${domain}${returnUrl}${returnUrlQueryParam}`;
+  }
+
+  verificationIntent.create(verificationIntentParams, (error, responseData) => {
+    respondToClient(error, responseData, res);
   });
 });
 
-
 /*
- * Webhook handler for asynchronous events.
+ * Handler for retrieving a VerificationIntent
  */
-app.post('/webhook', async (req, res) => {
-  let data, eventType;
-  // Check if webhook signing is configured.
-  if (process.env.STRIPE_WEBHOOK_SECRET) {
-    // Retrieve the event by verifying the signature using the raw body and secret.
-    let event;
-    let signature = req.headers['stripe-signature'];
-    try {
-      event = stripe.webhooks.constructEvent(
-        req.rawBody,
-        signature,
-        process.env.STRIPE_WEBHOOK_SECRET
-      );
-    } catch (error) {
-      console.log('\nWebhook signature verification failed.');
-      console.log(error);
-      return res.sendStatus(400);
-    }
-    data = event.data.object;
-    eventType = event.type;
-  } else {
-    // Webhook signing is recommended, but if the secret is not configured in `config.js`,
-    // we can retrieve the event data directly from the request body.
-    data = req.body.data.object;
-    eventType = req.body.type;
-  }
-
-  // console.log('\nwebhook:eventType', eventType);
-  switch (eventType) {
-    case 'identity.verification_intent.created':
-      // no need to communicate with the client when the VerificationIntent is just created
-      console.log('\nVerificationIntent created');
-      break;
-    case 'identity.verification_intent.updated':
-    case 'identity.verification_intent.succeeded':
-      // update the cache
-      cache.upsert(data.id, data);
-
-      // use the cached websocket ID to talk to the right client
-      const socketId = cache.getStaticValue(data.id, 'socketId');
-      if (socketId) {
-        io.to(socketId).emit('verification_result', data.verifications.identity_document.status);
-      } else {
-        console.log('\nNo socket ID');
-      }
-      break;
-    default:
-      console.log('\nUnknown event type', eventType);
-      break;
-  }
-
-  res.sendStatus(200);
+app.get('/get-verification-intent/:verificationIntentId', async (req, res) => {
+  const {verificationIntentId} = req.params;
+  verificationIntent.get(verificationIntentId, (error, responseData) => {
+    respondToClient(error, responseData, res);
+  });
 });
-
 
 /*
  * Handle 404 responses
  */
 app.use(function (req, res, next) {
-  const path = resolve(process.env.STATIC_DIR + '/404.html');
+  const path = resolve(__dirname, '../client/404.html');
   res.status(404).sendFile(path);
 })
 
 
-/*
- * Handle websocket connection
- */
-io.on('connect', (socket) => {
-  console.log('socket: connect:\t', socket.id, new Date());
-
-  // 'init' event triggers for both new connections and re-connects
-  socket.on('init', (data) => {
-    const { verificationIntentId } = data;
-    console.log('socket: acknowledge:\t', verificationIntentId);
-
-    // store the websocket ID for later
-    cache.setStaticValue(verificationIntentId, 'socketId', socket.id);
-
-    // check the cache before calling the VerificationIntent API
-    // this is especially useful when the API errors and we can exponentially backoff
-    let shouldCallApi;
-    try {
-      const latestVerification = cache.getLatestValue(verificationIntentId);
-      shouldCallApi = cache.shouldUpdateValue(
-        verificationIntentId, shouldGetUpdatedVerification(latestVerification)
-      );
-    } catch(error) {
-      shouldCallApi = true;
-    }
-
-    if (shouldCallApi) {
-      console.log('GET request:\t', verificationIntentId);
-      verificationIntent.get(verificationIntentId, (error, response) => {
-        if (response) {
-          console.log('GET response:\t', response.status);
-          cache.upsert(verificationIntentId, response);
-          // response.status = 'processing'; // TODO: remove testing hack
-          socket.emit('acknowledge', response.status);
-        } else if (error) {
-          console.log('error:\t', error.type);
-          cache.upsert(verificationIntentId, {error});
-          socket.emit('exception', {
-            errorCode: 'VERIFICATION_INTENT_NOT_FOUND',
-            errorMessage: 'Server could not find a recent verification record'
-          });
-        }
-      });
-    } else {
-      // retrieve from cache
-      const latestVerification = cache.getLatestValue(verificationIntentId);
-      console.log('cache:\t', latestVerification)
-      if (latestVerification.error) {
-        socket.emit('exception', {
-          errorCode: 'VERIFICATION_INTENT_NOT_FOUND',
-          errorMessage: 'Server could not find a recent verification record'
-        });
-      } else {
-        socket.emit('acknowledge', latestVerification.status);
-      }
-    }
-  });
-
-  socket.on('disconnect', (reason) => {
-    console.log('socket: disconnect:\t', socket.id, reason);
-  });
-});
-
-
 // Start server
 const localPort = 4242;
+const server = require('http').createServer(app);
 server.listen(localPort, () => console.log(`Node server listening on port ${localPort}!`));

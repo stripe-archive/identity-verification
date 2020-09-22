@@ -1,7 +1,11 @@
+let pollingInterval = 1000;
+const urlParams = new URLSearchParams(window.location.search);
+const verificationIntentId = urlParams.get('verification_intent_id');
+
 /*
  * Hide a DOM element
  */
-var hide = function(element) {
+const hide = function(element) {
   if (element) {
     element.classList.add('hide');
   }
@@ -10,7 +14,7 @@ var hide = function(element) {
 /*
  * Show a DOM element
  */
-var unhide = function(element) {
+const unhide = function(element) {
   if (element && element.classList.contains('hidden')) {
     element.classList.remove('hidden');
     element.classList.add('unhide');
@@ -20,84 +24,58 @@ var unhide = function(element) {
 /*
  * Update the h4 with the VerificationIntent status
  */
-var updateHeader = function(newStatus) {
-  var currentStatus = sessionStorage.getItem('vi_status') || '';
-  sessionStorage.setItem('vi_status', newStatus);
+const updateHeader = function(status) {
+  const header = document.querySelector('.status-text');
+  header.textContent = status.replace(/_/g, ' ');
 
-  var header = document.querySelector('.status-text');
-  header.textContent = newStatus.replace(/_/g, ' ');
-
-  var statusIcon = document.querySelector('.status-icon');
-  statusIcon.style.backgroundImage = `url('../media/Icon--${newStatus}.svg')`;
-
-  if (currentStatus) {
-    header.classList.remove(currentStatus);
-  }
-  header.classList.add(newStatus);
+  const statusIcon = document.querySelector('.status-icon');
+  statusIcon.style.backgroundImage = `url('../media/Icon--${status}.svg')`;
 }
 
 /*
  * Show a message to the user
  */
-var updateMessage = function(message) {
+const updateMessage = function(message) {
   unhide(document.getElementById('response'));
 
-  var responseContainer = document.getElementById('response');
+  const responseContainer = document.getElementById('response');
   responseContainer.textContent = message;
 }
 
-var urlParams = new URLSearchParams(window.location.search);
-var verificationIntentId = urlParams.get('verification_intent_id');
+const calculateBackoff = function(interval) {
+  const maxInterval = 60000;
+  const backoffRate = 1.5;
+  if (interval < maxInterval) {
+    return parseInt(interval * backoffRate, 10);
+  }
+  return interval;
+}
 
+const getVerificationIntent = function(verificationIntentId) {
+  return fetch(`/get-verification-intent/${verificationIntentId}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json"
+    },
+  }).then(function(result) {
+    return result.json();
+  }).then(function(data) {
+    console.log('%c get VI', 'color: #b0b', data);
+    if (data && data.status) {
+      updateHeader(data.status)
 
-
-if (verificationIntentId) {
-  var socket = io();
-
-  // websocket event when a new connection or a re-connect
-  socket.on('connect', function() {
-    console.log('%c socket:connect', 'color: #b0b');
-    socket.emit('init', {
-      verificationIntentId: verificationIntentId,
-    });
-  });
-
-  // websocket event when the server sends a message
-  socket.on('acknowledge', function(status) {
-    console.log('%c socket:acknowledge', 'color: #b0b', status);
-    updateHeader(status);
-  });
-
-  // websocket event when the server sends an error
-  socket.on('exception', function(error) {
-    console.log('%c socket:error', 'color: #b0b', error);
-    if (error.errorCode === 'VERIFICATION_INTENT_NOT_FOUND') {
-      updateMessage('Oops, the server could not find a recent verification.\n\nPlease start over.');
+      // If the verification is still processing, poll every second
+      if (data.status === 'processing') {
+        window.setTimeout(() => {
+          getVerificationIntent(verificationIntentId);
+          pollingInterval = calculateBackoff(pollingInterval);
+          console.log('%c polling interval', 'color: #b0b', pollingInterval);
+        }, pollingInterval);
+      }
+    } else {
       updateHeader('error');
     }
   });
-
-  // websocket event when the server sends the first VerificationIntent result
-  // TODO remove this case to simplify logic
-  socket.on('verification_result', function(status) {
-    console.log('%c socket:result', 'color: #b0b', status);
-    updateHeader(status)
-  });
-} else {
-  updateMessage('Oops, could not find a recent verification.\n\nPlease start over.');
-  updateHeader('error');
-  console.log('Could not find an existing verification.');
 }
 
-// Show a message in case a verification is pending
-if (document.location.search.includes('existing-verification')) {
-  var titleContainer = document.querySelector('.sr-verification-summary');
-  var message = document.createElement('h4');
-
-  if (verificationIntentId) {
-    message.textContent = 'A verification is already in progress';
-  } else {
-    message.textContent = 'Oops, something went wrong. Please start over.';
-  }
-  titleContainer.appendChild(message);
-}
+getVerificationIntent(verificationIntentId);
