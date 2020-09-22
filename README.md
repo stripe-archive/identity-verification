@@ -2,7 +2,7 @@
 
 **Demo**
 
-See a [hosted version](https://khw77.sse.codesandbox.io/) of the demo or fork a copy on [codesandbox.io](https://codesandbox.io/s/stripe-identity-verification-v2-khw77)
+See a [hosted version](https://1l78m.sse.codesandbox.io/) of the demo or fork a copy on [codesandbox.io](https://codesandbox.io/s/identity-verification-sample-v3-1l78m)
 
 ![demo app recording](./screenshots/demo_app.gif)
 
