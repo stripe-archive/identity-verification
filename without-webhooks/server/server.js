@@ -95,6 +95,7 @@ app.post('/create-verification-intent', async (req, res) => {
   const verificationIntentParams = {
     requested_verifications: [
       'identity_document',
+      'selfie',
     ],
     metadata: {
       userId: uuid(), // optional: pass a user's ID through the VerificationIntent API

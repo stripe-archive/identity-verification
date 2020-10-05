@@ -84,6 +84,7 @@ app.post('/create-verification-intent', async (req, res) => {
     return_url: `${domain}/next-step?verification_intent_id={VERIFICATION_INTENT_ID}`,
     requested_verifications: [
       'identity_document',
+      'selfie',
     ],
     metadata: {
       userId: uuid(), // optional: pass a user's ID through the VerificationIntent API
