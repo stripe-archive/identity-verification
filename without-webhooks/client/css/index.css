@@ -12,8 +12,10 @@
 }
 
 .stripe-identity-verification-iframe {
-  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
+  border-radius: 4px;
   width: 80vw;
   max-width: 480px;
   height: 76vh;
