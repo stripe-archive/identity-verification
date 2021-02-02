@@ -68,7 +68,7 @@ startButton.addEventListener('click', function() {
   });
 });
 
-const newPageLink = document.getElementById('create-verification-intent-new-page');
+const newPageLink = document.getElementById('create-verification-intent-new-tab');
 newPageLink.addEventListener('click', function() {
   startIdentityVerification('/next-step').then(function(url) {
     // redirect the user to the verification flow
