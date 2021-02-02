@@ -20,7 +20,7 @@
   height: 76vh;
   min-height: 38vh;
   max-height: 800px;
-  background-color: #fff;
+  background-color: transparent;
   box-shadow: 0 0.1rem 1rem rgba(1, 0, 20, 0.3);
   color: #010014;
   animation: zoomIn 0.3s;
