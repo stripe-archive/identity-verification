@@ -1,6 +1,6 @@
 let pollingInterval = 1000;
 const urlParams = new URLSearchParams(window.location.search);
-const verificationIntentId = urlParams.get('verification_intent_id');
+const verificationSessionId = urlParams.get('verification_session_id');
 
 /*
  * Hide a DOM element
@@ -22,7 +22,7 @@ const unhide = function(element) {
 }
 
 /*
- * Update the h4 with the VerificationIntent status
+ * Update the h4 with the VerificationSession status
  */
 const updateHeader = function(status) {
   const header = document.querySelector('.status-text');
@@ -51,8 +51,8 @@ const calculateBackoff = function(interval) {
   return interval;
 }
 
-const getVerificationIntent = function(verificationIntentId) {
-  return fetch(`/get-verification-intent/${verificationIntentId}`, {
+const getVerificationSession = function(verificationSessionId) {
+  return fetch(`/get-verification-session/${verificationSessionId}`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json"
@@ -60,14 +60,14 @@ const getVerificationIntent = function(verificationIntentId) {
   }).then(function(result) {
     return result.json();
   }).then(function(data) {
-    console.log('%c get VerificationIntent', 'color: #b0b', data);
+    console.log('%c get VerificationSession', 'color: #b0b', data);
     if (data && data.status) {
       updateHeader(data.status)
 
       // If the verification is still processing, poll every second
       if (data.status === 'processing') {
         window.setTimeout(() => {
-          getVerificationIntent(verificationIntentId);
+          getVerificationSession(verificationSessionId);
           pollingInterval = calculateBackoff(pollingInterval);
           console.log('%c polling interval', 'color: #b0b', pollingInterval);
         }, pollingInterval);
@@ -78,4 +78,4 @@ const getVerificationIntent = function(verificationIntentId) {
   });
 }
 
-getVerificationIntent(verificationIntentId);
+getVerificationSession(verificationSessionId);
