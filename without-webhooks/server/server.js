@@ -9,24 +9,24 @@ const bodyParser = require('body-parser')
 
 // Stripe
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-stripe.setApiVersion('2020-03-02; identity_beta=v3');
+stripe.setApiVersion('2020-03-02; identity_beta=v4');
 const StripeResource = require('stripe').StripeResource;
 
 // unique ID's
 const uuid = require('uuid/v4');
 
 
-const VerificationIntent = StripeResource.extend({
+const VerificationSession = StripeResource.extend({
   create: StripeResource.method({
     method: 'POST',
-    path: 'identity/verification_intents',
+    path: 'identity/verification_sessions',
   }),
   get: StripeResource.method({
     method: 'GET',
-    path: 'identity/verification_intents/{verificationIntentId}',
+    path: 'identity/verification_sessions/{verificationSessionId}',
   })
 });
-const verificationIntent = new VerificationIntent(stripe);
+const verificationSession = new VerificationSession(stripe);
 
 /*
  * Express middleware
@@ -73,12 +73,12 @@ const respondToClient = (error, responseData, res) => {
     console.error('\nError:\n', error.raw);
     res.send(error);
   } else if (responseData) {
-    // console.log('\nVerificationIntent created:\n', responseData);
+    // console.log('\nVerificationSession created:\n', responseData);
     if (responseData.id) {
       res.send(responseData);
     } else {
       res.status(500).send({
-        errororMessage: 'VerificationIntent contained no `id` field'
+        errororMessage: 'VerificationSession contained no `id` field'
       });
     }
   }
@@ -86,38 +86,41 @@ const respondToClient = (error, responseData, res) => {
 
 
 /*
- * Handler for creating the VerificationIntent
+ * Handler for creating the VerificationSession
  */
-app.post('/create-verification-intent', async (req, res) => {
+app.post('/create-verification-session', async (req, res) => {
   const domain = req.get('origin') || req.header('Referer');
   const {returnUrl} = req.body;
 
-  const verificationIntentParams = {
-    requested_verifications: [
-      'identity_document',
-      'selfie',
-    ],
+  const verificationSessionParams = {
+    type: 'document',
+    options: {
+      document: {
+        require_matching_selfie: true,
+      },
+    },
     metadata: {
-      userId: uuid(), // optional: pass a user's ID through the VerificationIntent API
+      userId: uuid(), // optional: pass a user's ID through the VerificationSession API
     },
   }
 
   if (returnUrl) {
-    const returnUrlQueryParam = '?verification_intent_id={VERIFICATION_INTENT_ID}';
-    verificationIntentParams.return_url = `${domain}${returnUrl}${returnUrlQueryParam}`;
+    // {VERIFICATION_INTENT_ID} will automatically be replaced with the VerificationSession `id`
+    const returnUrlQueryParam = '?verification_session_id={VERIFICATION_INTENT_ID}';
+    verificationSessionParams.return_url = `${domain}${returnUrl}${returnUrlQueryParam}`;
   }
 
-  verificationIntent.create(verificationIntentParams, (error, responseData) => {
+  verificationSession.create(verificationSessionParams, (error, responseData) => {
     respondToClient(error, responseData, res);
   });
 });
 
 /*
- * Handler for retrieving a VerificationIntent
+ * Handler for retrieving a VerificationSession
  */
-app.get('/get-verification-intent/:verificationIntentId', async (req, res) => {
-  const {verificationIntentId} = req.params;
-  verificationIntent.get(verificationIntentId, (error, responseData) => {
+app.get('/get-verification-session/:verificationSessionId', async (req, res) => {
+  const {verificationSessionId} = req.params;
+  verificationSession.get(verificationSessionId, (error, responseData) => {
     respondToClient(error, responseData, res);
   });
 });

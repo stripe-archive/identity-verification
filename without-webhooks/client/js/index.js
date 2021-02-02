@@ -1,10 +1,10 @@
-let verificationIntentId;
+let verificationSessionId;
 
 /*
  * Calls the server to retrieve the identity verification start url
  */
 const startIdentityVerification = function(returnUrl) {
-  return fetch("/create-verification-intent", {
+  return fetch("/create-verification-session", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -13,9 +13,9 @@ const startIdentityVerification = function(returnUrl) {
   }).then(function(result) {
     return result.json();
   }).then(function(data) {
-    if (data && data.id && data.next_action && data.next_action.redirect_to_url) {
-      verificationIntentId = data.id;
-      return data.next_action.redirect_to_url;
+    if (data && data.id && data.url) {
+      verificationSessionId = data.id;
+      return data.url;
     }
   });
 }
@@ -23,10 +23,7 @@ const startIdentityVerification = function(returnUrl) {
 const iframeContainerTemplate = `
   <div class="modal-container">
     <div class="stripe-identity-verification-iframe">
-      <div class="iframe-header">
-        <span class="iframe-title">Verify your identity</span>
-        <img class="iframe-close" src="../media/cancel.svg">
-      </div>
+      <span class="iframe-close">Close</span>
     </div>
     <div class="modal-backdrop"></div>
   </div>
@@ -64,14 +61,14 @@ const openIframe = function(url) {
   return iframe;
 };
 
-const startButton = document.getElementById('create-verification-intent');
+const startButton = document.getElementById('create-verification-session');
 startButton.addEventListener('click', function() {
   startIdentityVerification().then(function(url) {
     openIframe(url);
   });
 });
 
-const newPageLink = document.getElementById('create-verification-intent-new-page');
+const newPageLink = document.getElementById('create-verification-session-new-tab');
 newPageLink.addEventListener('click', function() {
   startIdentityVerification('/next-step').then(function(url) {
     // redirect the user to the verification flow
@@ -93,8 +90,8 @@ const handleIframeMessage = function(event) {
     } else if (data.type === 'success') {
       window.setTimeout(() => {
         closeIframe()
-        if (verificationIntentId) {
-          window.location.href = `/next-step?verification_intent_id=${verificationIntentId}`;
+        if (verificationSessionId) {
+          window.location.href = `/next-step?verification_session_id=${verificationSessionId}`;
         }
       }, 1600);
     } else if (data.type === 'error') {
