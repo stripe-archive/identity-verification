@@ -23,10 +23,7 @@ const startIdentityVerification = function(returnUrl) {
 const iframeContainerTemplate = `
   <div class="modal-container">
     <div class="stripe-identity-verification-iframe">
-      <div class="iframe-header">
-        <span class="iframe-title">Verify your identity</span>
-        <img class="iframe-close" src="../media/cancel.svg">
-      </div>
+      <span class="iframe-close">Close</span>
     </div>
     <div class="modal-backdrop"></div>
   </div>
