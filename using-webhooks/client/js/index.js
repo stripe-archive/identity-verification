@@ -2,7 +2,7 @@
  * Calls the server to retrieve the identity verification start url
  */
 var startIdentityVerification = function() {
-  fetch("/create-verification-intent", {
+  fetch("/create-verification-session", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -19,5 +19,5 @@ var startIdentityVerification = function() {
   });
 }
 
-var startButton = document.getElementById('create-verification-intent');
+var startButton = document.getElementById('create-verification-session');
 startButton.addEventListener('click', startIdentityVerification);

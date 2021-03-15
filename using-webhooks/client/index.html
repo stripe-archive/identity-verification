@@ -9,7 +9,9 @@
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="css/normalize.css" />
     <link rel="stylesheet" href="css/global.css" />
+    <link rel="stylesheet" href="css/index.css" />
     <script src="https://polyfill.io/v3/polyfill.min.js?features=fetch%2CPromise%2CNumber.parseFloat"></script>
+    <script src="https://js.stripe.com/v3/"></script>
     <script src="js/constants.js" defer></script>
     <script src="js/index.js" defer></script>
   </head>
@@ -17,20 +19,29 @@
   <body>
     <nav>
       <div class="nav-content">
-        <a href="/">
-          <img src="../media/rocketrides.svg">
-        </a>
+        <div class="nav-left">
+          <a href="/">
+            <img src="../media/rocketrides.svg">
+          </a>
+        </div>
+        <div class="nav-right">
+          <a href="https://stripe.com/docs/identity">About</a>
+          <span class="divider">|</span>
+          <a href="https://github.com/bz-stripe/identity-verification-sample">Github</a>
+        </div>
       </div>
     </nav>
-    <div class="sr-root">
-      <div class="sr-main">
-        <div class="sr-verification-summary">
-          <h1 class="title">Get ready for take off</h1>
-          <h4>Verify your identity to become a rocket pilot</h4>
-        </div>
-        <button id="create-verification-intent">Verify me</button>
+    <main class="sr-main">
+      <div class="sr-verification-summary">
+        <h1 class="title">Get ready for take off</h1>
+        <h4>Verify your identity to become a rocket pilot</h4>
       </div>
-    </div>
+      <button id="create-verification-session">Verify me</button>
+      <div class="redirect-link-container">
+        <a id="create-verification-session-new-tab" href="javascript:void(0);">Open verification in a new tab</a>
+        <img src="../media/external.svg">
+      </div>
+    </main>
     <footer>
       <div class="annotation">
         <a class="stripe" href="https://stripe.com" target="_blank">Stripe</a>
