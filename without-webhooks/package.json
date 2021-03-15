@@ -24,5 +24,8 @@
     "stylelint": "^13.7.1",
     "stylelint-no-unsupported-browser-features": "^4.0.0",
     "uuid": "^3.3.3"
+  },
+  "resolutions": {
+    "node-notifier": "^8.0.1"
   }
 }
