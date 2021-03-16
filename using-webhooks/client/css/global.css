@@ -38,6 +38,7 @@
 }
 
 body {
+  position: relative !important;
   background-color: var(--background-color);
   background-image: url("../media/swirly-background.jpg");
   background-size: cover;
@@ -225,13 +226,13 @@ h4 {
 
 @media (max-width: 760px) {
   .sr-main {
-    padding: 18vh 2vh;
+    padding: 12vh 2vh;
   }
 }
 
 @media (max-width: 340px) {
   .sr-main {
-    padding: 8vh 2vh;
+    padding: 8vh 2vh 20vh;
   }
 }
 

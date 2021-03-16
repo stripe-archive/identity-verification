@@ -15,6 +15,9 @@
     <script src="js/constants.js" defer></script>
     <script src="js/index.js" defer></script>
   </head>
+  <script>
+    window.STRIPE_PUBLISHABLE_KEY = '<%= stripePublishableKey %>';
+  </script>
 
   <body>
     <nav>
@@ -36,7 +39,8 @@
         <h1 class="title">Get ready for take off</h1>
         <h4>Verify your identity to become a rocket pilot</h4>
       </div>
-      <button id="create-verification-session">Verify me</button>
+      <pre class="error-message hidden">Something went wrong...</pre>
+      <button class="cta-button" id="create-verification-session">Verify me</button>
       <div class="redirect-link-container">
         <a id="create-verification-session-new-tab" href="javascript:void(0);">Open verification in a new tab</a>
         <img src="../media/external.svg">

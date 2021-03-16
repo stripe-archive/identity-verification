@@ -2,6 +2,9 @@
 const { resolve } = require('path');
 const env = require('dotenv').config({ path: resolve(__dirname, '../../.env') });
 
+// ejs
+const ejs = require('ejs');
+
 // Express
 const express = require('express');
 const app = express();
@@ -39,8 +42,8 @@ const cache = new Store();
 /*
  * Express middleware
  */
-app.use(express.static('./client'));
-
+app.engine('html', require('ejs').renderFile);
+app.set('view engine', 'html');
 
 app.use(
   express.json({
@@ -54,16 +57,14 @@ app.use(
   })
 );
 
-
 /*
  * Serve homepage
  */
 app.get('/', (req, res) => {
   // Display sign up page
-  const path = resolve(__dirname, 'client/index.html');
-  res.sendFile(path);
+  const path = resolve(__dirname, '../client/index.html');
+  res.render(path, {stripePublishableKey: process.env.STRIPE_PUBLISHABLE_KEY});
 });
-
 
 /*
  * Serve return_url page
@@ -81,11 +82,14 @@ app.get('/next-step', (req, res) => {
 app.post('/create-verification-session', async (req, res) => {
   const domain = req.get('origin') || req.header('Referer');
   verificationSession.create({
-    return_url: `${domain}/next-step?verification_session_id={VERIFICATION_SESSION_ID}`,
-    requested_verifications: [
-      'identity_document',
-      'selfie',
-    ],
+    type: 'document',
+    use_stripe_sdk: true,
+    options: {
+      document: {
+        require_id_number: true,
+        require_matching_selfie: true,
+      },
+    },
     metadata: {
       userId: uuid(), // optional: pass a user's ID through the VerificationSession API
     },
@@ -93,21 +97,22 @@ app.post('/create-verification-session', async (req, res) => {
     // asynchronously called
     if (error) {
       console.log('\nError:\n', error.raw);
-      res.send(error);
+      res.send({error});
     } else if (response) {
       // console.log('\nVerificationSession created:\n', response);
       if (response.id) {
         cache.upsert(response.id, response);
-        res.send(response);
+        res.send({session: response});
       } else {
         res.status(500).send({
-          errororMessage: 'Verification session contained no ID'
+          error: {
+            message: 'Verification session contained no ID',
+          },
         });
       }
     }
   });
 });
-
 
 /*
  * Webhook handler for asynchronous events.
@@ -166,6 +171,10 @@ app.post('/webhook', async (req, res) => {
   res.sendStatus(200);
 });
 
+/*
+ * Handle other pages and static assets
+ */
+app.use(express.static('./client'));
 
 /*
  * Handle 404 responses
@@ -174,7 +183,6 @@ app.use(function (req, res, next) {
   const path = resolve(__dirname, '../client/404.html');
   res.status(404).sendFile(path);
 })
-
 
 /*
  * Handle websocket connection
@@ -238,7 +246,6 @@ io.on('connect', (socket) => {
     console.log('socket: disconnect:\t', socket.id, reason);
   });
 });
-
 
 // Start server
 const localPort = 4242;
