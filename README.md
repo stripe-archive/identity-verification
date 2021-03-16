@@ -29,8 +29,9 @@ cp env.example .env
 You will need a Stripe account in order to run the demo. Once you set up your account, go to the Stripe [developer dashboard](https://stripe.com/docs/development#api-keys) to find your API keys and update your .env file with the keys.
 
 ```
-STRIPE_SECRET_KEY=<replace-with-your-secret-key>
-STRIPE_WEBHOOK_SECRET=<replace-with-your-webhook-secret>
+STRIPE_SECRET_KEY=<replace-with-your-test-secret-key>
+STRIPE_PUBLISHABLE_KEY=<replace-with-your-test-publishable-key>
+STRIPE_WEBHOOK_SECRET=<replace-with-your-test-webhook-secret>
 ```
 
 `CLIENT_DIR` tells the server where to the client files are located and does not need to be modified unless you move the server files.
