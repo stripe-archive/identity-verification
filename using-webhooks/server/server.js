@@ -87,7 +87,7 @@ app.post('/create-verification-session', async (req, res) => {
     options: {
       document: {
         require_id_number: true,
-        require_matching_selfie: true,
+        // require_matching_selfie: true,
       },
     },
     metadata: {
@@ -144,21 +144,26 @@ app.post('/webhook', async (req, res) => {
     eventType = req.body.type;
   }
 
+  // use the cached websocket ID to talk to the right client
+
+
   // console.log('\nwebhook:eventType', eventType);
   switch (eventType) {
     case 'identity.verification_session.created':
-      // no need to communicate with the client when the VerificationSession is just created
-      console.log('\nVerificationSession created');
+    case 'identity.verification_session.processing':
+    case 'identity.verification_report.updated':
+    case 'identity.verification_report.verified': 
+      // no need to communicate with the client
+      console.log(eventType);
       break;
     case 'identity.verification_session.updated':
-    case 'identity.verification_session.succeeded':
+    case 'identity.verification_session.verified':
       // update the cache
       cache.upsert(data.id, data);
-
       // use the cached websocket ID to talk to the right client
       const socketId = cache.getStaticValue(data.id, 'socketId');
       if (socketId) {
-        io.to(socketId).emit('verification_result', data.verifications.identity_document.status);
+        io.to(socketId).emit('verification_result', data.status);
       } else {
         console.log('\nNo socket ID');
       }
