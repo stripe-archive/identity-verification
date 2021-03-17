@@ -14,10 +14,10 @@
     <script src="https://js.stripe.com/v3/"></script>
     <script src="js/constants.js" defer></script>
     <script src="js/index.js" defer></script>
+    <script>
+      window.STRIPE_PUBLISHABLE_KEY = '<%= stripePublishableKey %>';
+    </script>
   </head>
-  <script>
-    window.STRIPE_PUBLISHABLE_KEY = '<%= stripePublishableKey %>';
-  </script>
 
   <body>
     <nav>

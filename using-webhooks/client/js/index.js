@@ -49,6 +49,4 @@ const startIdentityVerification = function() {
   });
 }
 
-if (startButton) {
-  startButton.addEventListener('click', startIdentityVerification);
-}
+startButton.addEventListener('click', startIdentityVerification);

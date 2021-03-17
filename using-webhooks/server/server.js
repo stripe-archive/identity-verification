@@ -80,20 +80,21 @@ app.get('/next-step', (req, res) => {
  * Handler for creating the VerificationSession
  */
 app.post('/create-verification-session', async (req, res) => {
-  const domain = req.get('origin') || req.header('Referer');
-  verificationSession.create({
+  verificationSessionParams = {
     type: 'document',
     use_stripe_sdk: true,
     options: {
       document: {
         require_id_number: true,
-        // require_matching_selfie: true,
+        require_matching_selfie: true,
       },
     },
     metadata: {
       userId: uuid(), // optional: pass a user's ID through the VerificationSession API
     },
-  }, (error, response) => {
+  };
+
+  verificationSession.create(verificationSessionParams, (error, response) => {
     // asynchronously called
     if (error) {
       console.log('\nError:\n', error.raw);
@@ -177,7 +178,7 @@ app.post('/webhook', async (req, res) => {
 });
 
 /*
- * Handle other pages and static assets
+ * Handle static assets and other pages
  */
 app.use(express.static('./client'));
 

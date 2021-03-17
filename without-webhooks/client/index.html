@@ -11,10 +11,14 @@
     <link rel="stylesheet" href="css/global.css" />
     <link rel="stylesheet" href="css/index.css" />
     <script src="https://polyfill.io/v3/polyfill.min.js?features=fetch%2CPromise%2CNumber.parseFloat"></script>
+    <script src="https://js.stripe.com/v3/"></script>
     <script src="js/constants.js" defer></script>
     <script src="js/index.js" defer></script>
+    <script>
+      window.STRIPE_PUBLISHABLE_KEY = '<%= stripePublishableKey %>';
+    </script>
   </head>
-
+  
   <body>
     <nav>
       <div class="nav-content">
