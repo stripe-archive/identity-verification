@@ -2,6 +2,9 @@
 const { resolve } = require('path');
 const env = require('dotenv').config({ path: resolve(__dirname, '../../.env') });
 
+// ejs
+const ejs = require('ejs');
+
 // Express
 const express = require('express');
 const app = express();
@@ -12,7 +15,7 @@ const io = require('socket.io').listen(server);
 
 // Stripe
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-stripe.setApiVersion('2020-03-02; identity_beta=v3');
+stripe.setApiVersion('2020-03-02; identity_beta=v5');
 const StripeResource = require('stripe').StripeResource;
 
 // unique ID's
@@ -23,24 +26,24 @@ const Store = require('./store');
 const shouldGetUpdatedVerification = require('./utils').shouldGetUpdatedVerification;
 
 
-const VerificationIntent = StripeResource.extend({
+const VerificationSession = StripeResource.extend({
   create: StripeResource.method({
     method: 'POST',
-    path: 'identity/verification_intents',
+    path: 'identity/verification_sessions',
   }),
   get: StripeResource.method({
     method: 'GET',
-    path: 'identity/verification_intents/{verificationIntentId}',
+    path: 'identity/verification_sessions/{verificationSessionId}',
   })
 });
-const verificationIntent = new VerificationIntent(stripe);
+const verificationSession = new VerificationSession(stripe);
 const cache = new Store();
 
 /*
  * Express middleware
  */
-app.use(express.static('./client'));
-
+app.engine('html', require('ejs').renderFile);
+app.set('view engine', 'html');
 
 app.use(
   express.json({
@@ -54,16 +57,14 @@ app.use(
   })
 );
 
-
 /*
  * Serve homepage
  */
 app.get('/', (req, res) => {
   // Display sign up page
-  const path = resolve(__dirname, 'client/index.html');
-  res.sendFile(path);
+  const path = resolve(__dirname, '../client/index.html');
+  res.render(path, {stripePublishableKey: process.env.STRIPE_PUBLISHABLE_KEY});
 });
-
 
 /*
  * Serve return_url page
@@ -76,38 +77,43 @@ app.get('/next-step', (req, res) => {
 
 
 /*
- * Handler for creating the VerificationIntent
+ * Handler for creating the VerificationSession
  */
-app.post('/create-verification-intent', async (req, res) => {
-  const domain = req.get('origin') || req.header('Referer');
-  verificationIntent.create({
-    return_url: `${domain}/next-step?verification_intent_id={VERIFICATION_INTENT_ID}`,
-    requested_verifications: [
-      'identity_document',
-      'selfie',
-    ],
-    metadata: {
-      userId: uuid(), // optional: pass a user's ID through the VerificationIntent API
+app.post('/create-verification-session', async (req, res) => {
+  verificationSessionParams = {
+    type: 'document',
+    use_stripe_sdk: true,
+    options: {
+      document: {
+        require_id_number: true,
+        require_matching_selfie: true,
+      },
     },
-  }, (error, response) => {
+    metadata: {
+      userId: uuid(), // optional: pass a user's ID through the VerificationSession API
+    },
+  };
+
+  verificationSession.create(verificationSessionParams, (error, response) => {
     // asynchronously called
     if (error) {
       console.log('\nError:\n', error.raw);
-      res.send(error);
+      res.send({error});
     } else if (response) {
-      // console.log('\nVerificationIntent created:\n', response);
+      // console.log('\nVerificationSession created:\n', response);
       if (response.id) {
         cache.upsert(response.id, response);
-        res.send(response);
+        res.send({session: response});
       } else {
         res.status(500).send({
-          errororMessage: 'Verification intent contained no ID'
+          error: {
+            message: 'Verification session contained no ID',
+          },
         });
       }
     }
   });
 });
-
 
 /*
  * Webhook handler for asynchronous events.
@@ -139,21 +145,26 @@ app.post('/webhook', async (req, res) => {
     eventType = req.body.type;
   }
 
+  // use the cached websocket ID to talk to the right client
+
+
   // console.log('\nwebhook:eventType', eventType);
   switch (eventType) {
-    case 'identity.verification_intent.created':
-      // no need to communicate with the client when the VerificationIntent is just created
-      console.log('\nVerificationIntent created');
+    case 'identity.verification_session.created':
+    case 'identity.verification_session.processing':
+    case 'identity.verification_report.updated':
+    case 'identity.verification_report.verified': 
+      // no need to communicate with the client
+      console.log(eventType);
       break;
-    case 'identity.verification_intent.updated':
-    case 'identity.verification_intent.succeeded':
+    case 'identity.verification_session.updated':
+    case 'identity.verification_session.verified':
       // update the cache
       cache.upsert(data.id, data);
-
       // use the cached websocket ID to talk to the right client
       const socketId = cache.getStaticValue(data.id, 'socketId');
       if (socketId) {
-        io.to(socketId).emit('verification_result', data.verifications.identity_document.status);
+        io.to(socketId).emit('verification_result', data.status);
       } else {
         console.log('\nNo socket ID');
       }
@@ -166,6 +177,10 @@ app.post('/webhook', async (req, res) => {
   res.sendStatus(200);
 });
 
+/*
+ * Handle static assets and other pages
+ */
+app.use(express.static('./client'));
 
 /*
  * Handle 404 responses
@@ -175,7 +190,6 @@ app.use(function (req, res, next) {
   res.status(404).sendFile(path);
 })
 
-
 /*
  * Handle websocket connection
  */
@@ -184,48 +198,48 @@ io.on('connect', (socket) => {
 
   // 'init' event triggers for both new connections and re-connects
   socket.on('init', (data) => {
-    const { verificationIntentId } = data;
-    console.log('socket: acknowledge:\t', verificationIntentId);
+    const { verificationSessionId } = data;
+    console.log('socket: acknowledge:\t', verificationSessionId);
 
     // store the websocket ID for later
-    cache.setStaticValue(verificationIntentId, 'socketId', socket.id);
+    cache.setStaticValue(verificationSessionId, 'socketId', socket.id);
 
-    // check the cache before calling the VerificationIntent API
+    // check the cache before calling the VerificationSession API
     // this is especially useful when the API errors and we can exponentially backoff
     let shouldCallApi;
     try {
-      const latestVerification = cache.getLatestValue(verificationIntentId);
+      const latestVerification = cache.getLatestValue(verificationSessionId);
       shouldCallApi = cache.shouldUpdateValue(
-        verificationIntentId, shouldGetUpdatedVerification(latestVerification)
+        verificationSessionId, shouldGetUpdatedVerification(latestVerification)
       );
     } catch(error) {
       shouldCallApi = true;
     }
 
     if (shouldCallApi) {
-      console.log('GET request:\t', verificationIntentId);
-      verificationIntent.get(verificationIntentId, (error, response) => {
+      console.log('GET request:\t', verificationSessionId);
+      verificationSession.get(verificationSessionId, (error, response) => {
         if (response) {
           console.log('GET response:\t', response.status);
-          cache.upsert(verificationIntentId, response);
+          cache.upsert(verificationSessionId, response);
           // response.status = 'processing'; // TODO: remove testing hack
           socket.emit('acknowledge', response.status);
         } else if (error) {
           console.log('error:\t', error.type);
-          cache.upsert(verificationIntentId, {error});
+          cache.upsert(verificationSessionId, {error});
           socket.emit('exception', {
-            errorCode: 'VERIFICATION_INTENT_NOT_FOUND',
+            errorCode: 'VERIFICATION_SESSION_NOT_FOUND',
             errorMessage: 'Server could not find a recent verification record'
           });
         }
       });
     } else {
       // retrieve from cache
-      const latestVerification = cache.getLatestValue(verificationIntentId);
+      const latestVerification = cache.getLatestValue(verificationSessionId);
       console.log('cache:\t', latestVerification)
       if (latestVerification.error) {
         socket.emit('exception', {
-          errorCode: 'VERIFICATION_INTENT_NOT_FOUND',
+          errorCode: 'VERIFICATION_SESSION_NOT_FOUND',
           errorMessage: 'Server could not find a recent verification record'
         });
       } else {
@@ -238,7 +252,6 @@ io.on('connect', (socket) => {
     console.log('socket: disconnect:\t', socket.id, reason);
   });
 });
-
 
 // Start server
 const localPort = 4242;

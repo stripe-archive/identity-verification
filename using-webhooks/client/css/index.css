@@ -1,0 +1,42 @@
+.modal-container {
+  z-index: 2147483647;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stripe-identity-verification-iframe {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 80vw;
+  max-width: 480px;
+  height: 76vh;
+  min-height: 38vh;
+  max-height: 800px;
+  background-color: transparent;
+  box-shadow: 0 0.1rem 1rem rgba(1, 0, 20, 0.3);
+  color: #010014;
+  animation: zoomIn 0.3s;
+}
+
+@media (max-width: 480px) {
+  .stripe-identity-verification-iframe {
+    width: 100%;
+  }
+}
+
+.error-message {
+  font-size: 16px;
+  color: var(--red-4);
+}
+
+.error-message.hidden {
+  display: none;
+}

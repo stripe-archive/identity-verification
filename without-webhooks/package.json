@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "debug": "node --inspect server/server.js",
+    "dev": "nodemon server/server.js",
     "start": "node server/server.js",
     "test": "jest"
   },
@@ -13,16 +14,21 @@
   "dependencies": {
     "body-parser": "^1.19.0",
     "dotenv": "^8.0.0",
+    "ejs": "^3.1.6",
     "eslint": "^6.8.0",
     "eslint-plugin-compat": "^3.5.1",
     "express": "^4.17.1",
     "jest": "^24.9.0",
     "mockdate": "^2.0.5",
     "node-fetch": "^2.6.1",
+    "nodemon": "^2.0.7",
     "socket.io": "^2.3.0",
     "stripe": "^7.1.0",
     "stylelint": "^13.7.1",
     "stylelint-no-unsupported-browser-features": "^4.0.0",
     "uuid": "^3.3.3"
+  },
+  "resolutions": {
+    "node-notifier": "^8.0.1"
   }
 }

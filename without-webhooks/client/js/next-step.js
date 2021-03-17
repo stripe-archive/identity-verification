@@ -1,45 +1,22 @@
 let pollingInterval = 1000;
 const urlParams = new URLSearchParams(window.location.search);
-const verificationSessionId = urlParams.get('verification_session_id');
-
-/*
- * Hide a DOM element
- */
-const hide = function(element) {
-  if (element) {
-    element.classList.add('hide');
-  }
-}
-
-/*
- * Show a DOM element
- */
-const unhide = function(element) {
-  if (element && element.classList.contains('hidden')) {
-    element.classList.remove('hidden');
-    element.classList.add('unhide');
-  }
-}
+const verificationSessionId = sessionStorage.getItem('verification_session_id');
 
 /*
  * Update the h4 with the VerificationSession status
  */
 const updateHeader = function(status) {
+  const lastError = JSON.parse(sessionStorage.getItem('verification_session_error') || null);
+
   const header = document.querySelector('.status-text');
-  header.textContent = status.replace(/_/g, ' ');
+  let headerText = status.replace(/_/g, ' ');
+  if (status === 'requires_input' && lastError && lastError.code) {
+    headerText = lastError.code.replace(/_/g, ' ');
+  }
+  header.textContent = headerText;
 
   const statusIcon = document.querySelector('.status-icon');
   statusIcon.style.backgroundImage = `url('../media/Icon--${status}.svg')`;
-}
-
-/*
- * Show a message to the user
- */
-const updateMessage = function(message) {
-  unhide(document.getElementById('response'));
-
-  const responseContainer = document.getElementById('response');
-  responseContainer.textContent = message;
 }
 
 const calculateBackoff = function(interval) {
@@ -60,12 +37,16 @@ const getVerificationSession = function(verificationSessionId) {
   }).then(function(result) {
     return result.json();
   }).then(function(data) {
-    console.log('%c get VerificationSession', 'color: #b0b', data);
-    if (data && data.status) {
-      updateHeader(data.status)
+    // console.log('%c get VerificationSession', 'color: #b0b', data);
+    if (data && data.session) {
+      if (data.session.last_error) {
+        updateHeader(data.session.last_error.code);
+      } else {
+        updateHeader(data.session.status)
+      }
 
       // If the verification is still processing, poll every second
-      if (data.status === 'processing') {
+      if (data.session.status === 'processing') {
         window.setTimeout(() => {
           getVerificationSession(verificationSessionId);
           pollingInterval = calculateBackoff(pollingInterval);
@@ -77,5 +58,17 @@ const getVerificationSession = function(verificationSessionId) {
     }
   });
 }
-
 getVerificationSession(verificationSessionId);
+
+/*
+ * Clear data from last verification
+ */
+const clearVerificationSession = function() {
+  sessionStorage.removeItem('verification_session_id');
+  sessionStorage.removeItem('verification_session_error');
+  sessionStorage.removeItem('verification_session_status');
+  window.location.href = '/';
+};
+
+const startOverButton = document.querySelector('#start-over');
+startOverButton.addEventListener('click', clearVerificationSession);

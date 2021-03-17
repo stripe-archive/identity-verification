@@ -18,32 +18,35 @@
   <body>
     <nav>
       <div class="nav-content">
-        <a href="/">
-          <img src="../media/rocketrides.svg">
-        </a>
+        <div class="nav-left">
+          <a href="/">
+            <img src="../media/rocketrides.svg">
+          </a>
+        </div>
+        <div class="nav-right">
+          <a href="https://stripe.com/docs/identity">About</a>
+          <span class="divider">|</span>
+          <a href="https://github.com/bz-stripe/identity-verification-sample">Github</a>
+        </div>
       </div>
     </nav>
-    <div class="sr-root">
-      <div class="sr-main">
-        <div class="sr-verification-summary">
-          <h1 class="title">Identity verification</h1>
-          <h4 class="status-header">
-            <div class="status-icon"></div>
-            <span class="status-text"></span>
-          </h4>
-        </div>
-        <div class="progress-bar hidden">
-          <div id="progress" class="progress"></div>
-        </div>
-        <pre id="response" class="sr-callout response-json hidden">Waiting for response...</pre>
-        <div class="button-container">
-          <a href="https://stripe.com/docs/identity#access">
-            <button id="learn-more">Learn more</button>
-          </a>
-          <a href="/">
-            <button id="start-over" class="clear-button">Start over</button>
-          </a>
-        </div>
+    <div class="sr-main">
+      <div class="sr-verification-summary">
+        <h1 class="title">Identity verification</h1>
+        <h4 class="status-header">
+          <div class="status-icon"></div>
+          <span class="status-text"></span>
+        </h4>
+      </div>
+      <div class="progress-bar hidden">
+        <div id="progress" class="progress"></div>
+      </div>
+      <pre id="response" class="sr-callout response-json hidden">Waiting for response...</pre>
+      <div class="button-container">
+        <a href="https://stripe.com/docs/identity#access">
+          <button id="learn-more">Learn more</button>
+        </a>
+        <button id="start-over" class="clear-button">Start over</button>
       </div>
     </div>
     <footer>

@@ -2,6 +2,9 @@
 const { resolve } = require('path');
 const env = require('dotenv').config({ path: resolve(__dirname, '../../.env') });
 
+// ejs
+const ejs = require('ejs');
+
 // Express
 const express = require('express');
 const app = express();
@@ -9,7 +12,7 @@ const bodyParser = require('body-parser')
 
 // Stripe
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-stripe.setApiVersion('2020-03-02; identity_beta=v4');
+stripe.setApiVersion('2020-03-02; identity_beta=v5');
 const StripeResource = require('stripe').StripeResource;
 
 // unique ID's
@@ -31,7 +34,8 @@ const verificationSession = new VerificationSession(stripe);
 /*
  * Express middleware
  */
-app.use(express.static('./client'));
+app.engine('html', require('ejs').renderFile);
+app.set('view engine', 'html');
 
 app.use(
   express.json({
@@ -53,8 +57,8 @@ app.use(bodyParser.json());
  */
 app.get('/', (req, res) => {
   // Display sign up page
-  const path = resolve(__dirname, 'client/index.html');
-  res.sendFile(path);
+  const path = resolve(__dirname, '../client/index.html');
+  res.render(path, {stripePublishableKey: process.env.STRIPE_PUBLISHABLE_KEY});
 });
 
 
@@ -71,31 +75,31 @@ app.get('/next-step', (req, res) => {
 const respondToClient = (error, responseData, res) => {
   if (error) {
     console.error('\nError:\n', error.raw);
-    res.send(error);
+    res.send({error});
   } else if (responseData) {
     // console.log('\nVerificationSession created:\n', responseData);
     if (responseData.id) {
-      res.send(responseData);
+      res.send({session: responseData});
     } else {
       res.status(500).send({
-        errororMessage: 'VerificationSession contained no `id` field'
+        error: {
+          message: 'VerificationSession contained no `id` field'
+        },
       });
     }
   }
 };
 
-
 /*
- * Handler for creating the VerificationSession
+ * Handler for creating the VerificationSession for Stripe.js
  */
 app.post('/create-verification-session', async (req, res) => {
-  const domain = req.get('origin') || req.header('Referer');
-  const {returnUrl} = req.body;
-
   const verificationSessionParams = {
     type: 'document',
+    use_stripe_sdk: true,
     options: {
       document: {
+        require_id_number: true,
         require_matching_selfie: true,
       },
     },
@@ -104,10 +108,29 @@ app.post('/create-verification-session', async (req, res) => {
     },
   }
 
-  if (returnUrl) {
-    // {VERIFICATION_INTENT_ID} will automatically be replaced with the VerificationSession `id`
-    const returnUrlQueryParam = '?verification_session_id={VERIFICATION_INTENT_ID}';
-    verificationSessionParams.return_url = `${domain}${returnUrl}${returnUrlQueryParam}`;
+  verificationSession.create(verificationSessionParams, (error, responseData) => {
+    respondToClient(error, responseData, res);
+  });
+});
+
+/*
+ * Handler for creating the VerificationSession redirect link
+ */
+app.post('/create-verification-session-redirect', async (req, res) => {
+  const domain = req.get('origin') || req.header('Referer');
+
+  const verificationSessionParams = {
+    type: 'document',
+    options: {
+      document: {
+        require_id_number: true,
+        require_matching_selfie: true,
+      },
+    },
+    return_url: `${domain}/next-step`,
+    metadata: {
+      userId: uuid(), // optional: pass a user's ID through the VerificationSession API
+    },
   }
 
   verificationSession.create(verificationSessionParams, (error, responseData) => {
@@ -124,6 +147,11 @@ app.get('/get-verification-session/:verificationSessionId', async (req, res) => 
     respondToClient(error, responseData, res);
   });
 });
+
+/*
+ * Handle static assets and other pages
+ */
+app.use(express.static('./client'));
 
 /*
  * Handle 404 responses

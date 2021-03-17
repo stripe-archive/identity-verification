@@ -38,6 +38,7 @@
 }
 
 body {
+  position: relative !important;
   background-color: var(--background-color);
   background-image: url("../media/swirly-background.jpg");
   background-size: cover;
@@ -704,4 +705,3 @@ pre {
     transform: scale(0.8);
   }
 }
-
