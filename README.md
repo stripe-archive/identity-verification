@@ -15,7 +15,7 @@ Follow the steps below to run locally.
 **1. Clone the repository:**
 
 ```
-git clone https://github.com/bz-stripe/identity-verification-sample
+git clone https://github.com/stripe-samples/identity-verification
 ```
 
 **2. Copy the env.example to a .env file:**
