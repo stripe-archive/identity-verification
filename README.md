@@ -1,8 +1,10 @@
-# Identity Verification API (beta) demo app
+# Stripe Identity sample app
+
+[Identity](https://stripe.com/docs/identity) is a prebuilt, hosted identity verification flow that can help you capture signals about individuals to make sure that they are who they claim to be. Identity can help you increase the trust and safety of your community, streamline risk operations to reduce losses, or launch verification as a new feature within your product.
 
 **Demo**
 
-See a [hosted version](https://1l78m.sse.codesandbox.io/) of the demo or fork a copy on [codesandbox.io](https://codesandbox.io/s/identity-verification-sample-v3-1l78m)
+See a [hosted version](https://1l78m.sse.codesandbox.io/) of the sample app or [fork a copy](https://codesandbox.io/s/identity-verification-sample-v3-1l78m) on codesandbox.io.
 
 ![demo app recording](./screenshots/demo_app.gif)
 
