@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Stripe Identity Verification</title>
+    <meta name="description" content="A demo of Stripe Identity Verification" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="css/normalize.css" />
+    <link rel="stylesheet" href="css/global.css" />
+    <link rel="stylesheet" href="css/index.css" />
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=fetch%2CPromise%2CNumber.parseFloat"></script>
+    <script src="https://js.stripe.com/v3/"></script>
+    <script src="js/constants.js" defer></script>
+    <script src="js/index.js" defer></script>
+    <script>
+      window.STRIPE_PUBLISHABLE_KEY = '<%= stripePublishableKey %>';
+    </script>
+  </head>
+
+  <body>
+    <nav>
+      <div class="nav-content">
+        <div class="nav-left">
+          <a href="/">
+            <img src="../media/rocketrides.svg">
+          </a>
+        </div>
+        <div class="nav-right">
+          <a href="https://stripe.com/docs/identity">About</a>
+          <span class="divider">|</span>
+          <a href="https://github.com/bz-stripe/identity-verification-sample">Github</a>
+        </div>
+      </div>
+    </nav>
+    <main class="sr-main">
+      <div class="sr-verification-summary">
+        <h1 class="title">Get ready for take off</h1>
+        <h4>Verify your identity to become a rocket pilot</h4>
+      </div>
+      <pre class="error-message hidden">Something went wrong...</pre>
+      <button class="cta-button" id="create-verification-session">Verify me</button>
+    </main>
+    <footer>
+      <div class="annotation">
+        <a class="stripe" href="https://stripe.com" target="_blank">Stripe</a>
+        <p>Rocket Rides is a demo for <a href="https://stripe.com/docs/identity" target="_blank">Stripe identity verification</a>. It is not a real product.</p>
+        <a class="github arrow" href="https://stripe.com/docs/identity#access" target="_blank">Sign up for the beta</a>
+      </div>
+    </footer>
+  </body>
+</html>
