@@ -1,6 +1,6 @@
 {
   "name": "stripe-identity-verification-webhooks",
-  "version": "1.0.0",
+  "version": "5.0.0",
   "description": "How to verify a person's identity",
   "main": "index.js",
   "scripts": {
