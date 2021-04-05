@@ -1,4 +1,8 @@
-# Identity Verification API (beta) demo app
+# 🚧 Moved to https://github.com/stripe-samples/identity-verification
+
+---
+
+## Identity Verification API (beta) demo app
 
 **Demo**
 
