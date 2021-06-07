@@ -35,7 +35,6 @@ You will need a Stripe account in order to run the demo. Once you set up your ac
 ```
 STRIPE_SECRET_KEY=<replace-with-your-test-secret-key>
 STRIPE_PUBLISHABLE_KEY=<replace-with-your-test-publishable-key>
-STRIPE_WEBHOOK_SECRET=<replace-with-your-test-webhook-secret>
 ```
 
 `CLIENT_DIR` tells the server where to the client files are located and does not need to be modified unless you move the server files.
