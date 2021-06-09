@@ -1,5 +1,5 @@
 {
-  "name": "stripe-identity-verification-webhooks",
+  "name": "stripe-identity-verification",
   "version": "5.0.0",
   "description": "How to verify a person's identity",
   "main": "index.js",
