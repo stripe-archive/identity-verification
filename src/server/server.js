@@ -12,7 +12,6 @@ const bodyParser = require('body-parser')
 
 // Stripe
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-// stripe.setApiVersion('2020-03-02; identity_beta=v5');
 const StripeResource = require('stripe').StripeResource;
 
 // unique ID's
