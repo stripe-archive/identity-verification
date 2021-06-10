@@ -4,7 +4,7 @@
 
 **Demo**
 
-See a [hosted version](https://1l78m.sse.codesandbox.io/) of the sample app or [fork a copy](https://codesandbox.io/s/identity-verification-sample-v3-1l78m) on codesandbox.io.
+See a [hosted version](https://identity.stripedemos.com/) of the sample app.
 
 ![demo app recording](./screenshots/demo_app.gif)
 
@@ -28,37 +28,21 @@ Copy the env.example file into a file named .env in the project root folder. For
 cp env.example .env
 ```
 
-You will need a Stripe account in order to run the demo. Once you set up your account, go to the Stripe [developer dashboard](https://stripe.com/docs/development#api-keys) to find your API keys and update your .env file with the keys.
+You will need a Stripe account in order to run the demo. Additionally, you will need to setup your account to use Identity, which you can do so [here](https://dashboard.stripe.com/identity/application). Once you set up your account, go to the Stripe [developer dashboard](https://stripe.com/docs/development#api-keys) to find your API keys and update your .env file with the keys.
 
 ```
 STRIPE_SECRET_KEY=<replace-with-your-test-secret-key>
 STRIPE_PUBLISHABLE_KEY=<replace-with-your-test-publishable-key>
-STRIPE_WEBHOOK_SECRET=<replace-with-your-test-webhook-secret>
 ```
 
-`CLIENT_DIR` tells the server where to the client files are located and does not need to be modified unless you move the server files.
+`STATIC_DIR` tells the server where to the client files are located and does not need to be modified unless you move the server files.
 
 **3. Install and run:**
 ```
+cd src/
 npm install
 npm start
 ```
-
-**4. [Optional] Run a webhook locally:**
-
-If you want to test the integration with a local webhook on your machine, you can use the Stripe CLI to easily spin one up.
-
-First [install the CLI](https://stripe.com/docs/stripe-cli) and [link your Stripe account](https://stripe.com/docs/stripe-cli#link-account).
-
-```
-stripe listen --forward-to localhost:4242/webhook
-```
-
-The CLI will print a webhook secret key to the console. Set `STRIPE_WEBHOOK_SECRET` to this value in your .env file.
-
-You should see events logged in the console where the CLI is running.
-
-When you are ready to create a live webhook endpoint, follow our guide in the docs on [configuring a webhook endpoint in the dashboard](https://stripe.com/docs/webhooks/setup#configure-webhook-settings). 
 
 
 ## FAQ

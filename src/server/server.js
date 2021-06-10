@@ -12,7 +12,6 @@ const bodyParser = require('body-parser')
 
 // Stripe
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-stripe.setApiVersion('2020-03-02; identity_beta=v5');
 const StripeResource = require('stripe').StripeResource;
 
 // unique ID's
@@ -66,7 +65,6 @@ app.get('/', (req, res) => {
  * Serve return_url page
  */
 app.get('/next-step', (req, res) => {
-  // TODO handle sad path cases
   const path = resolve(__dirname, '../client/next-step.html');
   res.sendFile(path);
 });
@@ -77,7 +75,6 @@ const respondToClient = (error, responseData, res) => {
     console.error('\nError:\n', error.raw);
     res.send({error});
   } else if (responseData) {
-    // console.log('\nVerificationSession created:\n', responseData);
     if (responseData.id) {
       res.send({session: responseData});
     } else {
@@ -96,7 +93,6 @@ const respondToClient = (error, responseData, res) => {
 app.post('/create-verification-session', async (req, res) => {
   const verificationSessionParams = {
     type: 'document',
-    // use_stripe_sdk: true,
     options: {
       document: {
         require_id_number: true,
