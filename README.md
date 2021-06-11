@@ -6,8 +6,6 @@
 
 See a [hosted version](https://identity.stripedemos.com/) of the sample app.
 
-![demo app recording](./screenshots/demo_app.gif)
-
 ## How to run locally
 
 This sample includes a Node server implementation. 
