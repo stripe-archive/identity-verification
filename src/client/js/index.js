@@ -55,7 +55,7 @@ startButton.addEventListener('click', startIdentityVerification);
 /*
  * Calls the server to retrieve the identity verification start url
  */
-const redirectToIdentityVerification = function() {
+const addRedirectToIdentityVerification = function() {
   return fetch("/create-verification-session-redirect", {
     method: "POST",
     headers: {
@@ -66,12 +66,12 @@ const redirectToIdentityVerification = function() {
   }).then(function(data) {
     if (data && data.session && data.session.id && data.session.url) {
       sessionStorage.setItem('verification_session_id', data.session.id);
-      window.open(data.session.url, '_blank');
+      const newPageLink = document.querySelector('#create-verification-session-new-tab');
+      newPageLink.href = data.session.url;
     }
   }).catch(function(error) {
     console.error('Error:', error);
   });
 }
 
-const newPageLink = document.querySelector('#create-verification-session-new-tab');
-newPageLink.addEventListener('click', redirectToIdentityVerification);
+addRedirectToIdentityVerification()

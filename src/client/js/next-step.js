@@ -8,10 +8,17 @@ const verificationSessionId = sessionStorage.getItem('verification_session_id');
 const updateHeader = function(status) {
   const lastError = JSON.parse(sessionStorage.getItem('verification_session_error') || null);
 
+  const title_header = document.querySelector('.status-title');
+  title_header.textContent = "Your ride is not yet booked.";
+
   const header = document.querySelector('.status-text');
   let headerText = status.replace(/_/g, ' ');
   if (status === 'requires_input' && lastError && lastError.code) {
     headerText = lastError.code.replace(/_/g, ' ');
+  }
+  else if (status == "verified") {
+    title_header.textContent = "Your ride is booked!";
+    document.querySelector('.status-note').textContent = "For this demo, we will successfully verify everyone";
   }
   header.textContent = headerText;
 
