@@ -2,9 +2,9 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>Stripe Identity Verification</title>
-    <meta name="description" content="A demo of Stripe Identity Verification" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Rocket Rides: Stripe Identity demo</title>
+    <meta name="description" content="A demo of Stripe Identity API" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0" />
 
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="css/normalize.css" />
@@ -28,28 +28,26 @@
           </a>
         </div>
         <div class="nav-right">
-          <a href="https://stripe.com/docs/identity">About</a>
-          <span class="divider">|</span>
-          <a href="https://github.com/stripe-samples/identity-verification">Github</a>
+          <a href="https://stripe.com/docs/identity">Learn More</a>
         </div>
       </div>
     </nav>
     <main class="sr-main">
       <div class="sr-verification-summary">
-        <h1 class="title">Get ready for take off</h1>
-        <h4>Verify your identity to become a rocket pilot</h4>
+        <h1 class="title">Verify your identity to book a rocket ride</h1>
+        <h4>Get ready to take a photo of your ID and a selfie</h4>
       </div>
       <button id="create-verification-session">Verify me</button>
-      <div class="redirect-link-container">
-        <a id="create-verification-session-new-tab" href="javascript:void(0);">Open verification in a new tab</a>
+      <div id="redirect-link-container" class="redirect-link-container">
+        <a id="create-verification-session-new-tab" target="_blank">Open verification in a new tab</a>
         <img src="../media/external.svg">
       </div>
     </main>
     <footer>
       <div class="annotation">
         <a class="stripe" href="https://stripe.com" target="_blank">Stripe</a>
-        <p>Rocket Rides is a demo for <a href="https://stripe.com/docs/identity" target="_blank">Stripe identity verification</a>. It is not a real product.</p>
-        <a class="github arrow" href="https://stripe.com/docs/identity#access" target="_blank">Sign up for the beta</a>
+        <p>Rocket Rides is a demo for <a href="https://stripe.com/docs/identity" target="_blank">Stripe Identity</a>. It is not a real product.</p>
+        <a class="github arrow" href="https://github.com/stripe-samples/identity-verification" target="_blank">View on Github</a>
       </div>
     </footer>
   </body>

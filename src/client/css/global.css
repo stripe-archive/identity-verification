@@ -39,6 +39,9 @@
 
 body {
   position: relative !important;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
   background-color: var(--background-color);
   background-image: url("../media/swirly-background.jpg");
   background-size: cover;
@@ -68,7 +71,10 @@ nav {
 }
 
 footer {
+  margin: 0 auto;
   padding: 2vh;
+  width: 100vw;
+  max-width: var(--body-width);
 }
 
 @media (max-width: 480px) {
@@ -207,6 +213,7 @@ h4 {
   margin-bottom: 32px;
 }
 .sr-verification-summary {
+  margin-top: -18vh;
   margin-bottom: 20px;
 }
 
@@ -217,11 +224,12 @@ h4 {
   align-content: center;
   justify-content: center;
   margin: 0 auto;
+  padding: 0 2vh;
   width: 100vw;
   max-width: var(--body-width);
+  flex: 1;
   height: auto;
   min-height: 0.62vh;
-  padding: 38vh 2vh 18vh;
 }
 
 @media (max-width: 760px) {
@@ -263,16 +271,11 @@ h4 {
 
 /* Annotation */
 .annotation {
-  position: fixed;
-  bottom: 3.8vh;
-  left: 50%;
   display: flex;
-  transform: translateX(-50%);
   justify-content: space-between;
   align-items: center;
   border-radius: 4px;
   margin: 0;
-  max-width: var(--body-width);
   width: 100%;
   padding: 10px 22px;
   background-color: var(--background-light);
@@ -402,10 +405,21 @@ button.clear-button {
 .button-container {
   display: flex;
 }
+
 .button-container button {
   margin-right: 10px;
   width: auto;
   min-width: 16vh;
+}
+
+@media (max-width: 768px) {
+  .button-container {
+    flex-direction: column;
+  }
+  .button-container button {
+    width: 100%;
+    min-width: 16vw;
+  }
 }
 
 a {
