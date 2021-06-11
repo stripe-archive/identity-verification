@@ -418,7 +418,7 @@ button.clear-button {
   }
   .button-container button {
     width: 100%;
-    min-width: 16vh;
+    min-width: 16vw;
   }
 }
 
