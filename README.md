@@ -26,7 +26,9 @@ Copy the env.example file into a file named .env in the project root folder. For
 cp env.example .env
 ```
 
-You will need a Stripe account in order to run the demo. Additionally, you will need to setup your account to use Identity, which you can do so [here](https://dashboard.stripe.com/identity/application). Once you set up your account, go to the Stripe [developer dashboard](https://stripe.com/docs/development#api-keys) to find your API keys and update your .env file with the keys.
+You will need a Stripe account in order to run the demo. Additionally, you will need to setup your account to use Identity, which you can do so [here](https://dashboard.stripe.com/identity/application). Once you set up your account, go to the Stripe [developer dashboard](https://stripe.com/docs/development#api-keys) to find your API keys. 
+
+- Edit `.env` file with your text editor and update your `.env` file with the keys.
 
 ```
 STRIPE_SECRET_KEY=<replace-with-your-test-secret-key>
