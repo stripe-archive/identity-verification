@@ -1,3 +1,8 @@
+> <img src="https://stripe.dev/images/badges/archived.png" width="250">
+>
+> This project is deprecated and is no longer being actively maintained.
+> See our new [stripe-samples/identity](https://github.com/stripe-samples/identity) sample.
+
 # Stripe Identity sample app
 
 [Identity](https://stripe.com/docs/identity) is a prebuilt, hosted identity verification flow that can help you capture signals about individuals to make sure that they are who they claim to be. Identity can help you increase the trust and safety of your community, streamline risk operations to reduce losses, or launch verification as a new feature within your product.
